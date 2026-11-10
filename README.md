@@ -2,9 +2,10 @@
 
 Site statique de LYRA, servi par GitHub Pages sur le domaine lyrahq.co.
 
-- `index.html` : la landing. Le film passe une fois, coupe au noir, LYRA apparaît, puis le film repart en boucle,
-  flou, et se refait net sur SIGN HERE. Le bouton ouvre le formulaire de demande d'invitation : la demande part
-  vers le script Google de LYRA (feuille « LYRA, demandes d'invitation » et notification à moustafa@lyrahq.co).
+- `index.html` : la landing, en anglais. Le film passe une fois, coupe au noir, LYRA apparaît, puis le film repart
+  en boucle, flou, et se refait net sur SIGN HERE. Le bouton ouvre le formulaire de demande d'invitation : la demande
+  part vers le script Google de LYRA (feuille « LYRA, demandes d'invitation » et notification à moustafa@lyrahq.co).
+- `fr/index.html` : la même landing en français. lyrahq.fr y renvoie (redirection réglée chez GoDaddy).
 - `assets/site.js` et `assets/site.css` : l'animation et la mise en page de la landing.
 - `media/` : les deux films (16/9 en paysage, vertical en portrait) et leurs affiches.
 - `legal/`, `privacy/`, `data-deletion/` : pages légales en anglais. `fr/` : les mêmes en français.
