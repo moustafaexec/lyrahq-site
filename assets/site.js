@@ -225,7 +225,7 @@
 
   // Demande d'invitation : le bouton ouvre le formulaire du site. L'envoi part vers le script Google de LYRA,
   // qui range la demande dans une feuille et prévient par e-mail. Tant que le script n'est pas branché, la messagerie prend le relais.
-  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwvxMhXBi87CmWrvk1ICaVMzxAjies2VXHlKfFKasf8-412vBcc1L-po4dSnDU8U0zZLQ/exec';
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxzDuQSfyLYGlgdjRtdjPdu2XtsStI-ZKA0xsfo4FR0NKvKUReN_r9hfTUtx2QXzPk07Q/exec';
   var invite = document.getElementById('invite');
   var card = invite && invite.querySelector('.invite-card');
   var form = document.getElementById('invite-form');
