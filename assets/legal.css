@@ -1,0 +1,56 @@
+@font-face{font-family:'Libre Franklin';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/libre-franklin-400.woff2) format('woff2')}
+@font-face{font-family:'Libre Franklin';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/libre-franklin-500.woff2) format('woff2')}
+@font-face{font-family:'Libre Franklin';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/libre-franklin-600.woff2) format('woff2')}
+html,body{margin:0;background:#000812}
+@keyframes lg-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.lg-head{animation:lg-in .7s cubic-bezier(.2,.7,.2,1) both}
+.lg-main{animation:lg-in .7s cubic-bezier(.2,.7,.2,1) .06s both}
+.lg-foot{animation:lg-in .7s cubic-bezier(.2,.7,.2,1) .12s both}
+@media (prefers-reduced-motion:reduce){.lg-head,.lg-main,.lg-foot{animation:none}}
+.lg-sub a{color:#F4F9FF;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:rgba(244,249,255,.35);text-underline-offset:3px}
+.lg{min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;background:#000812;color:#E0E5EB;font-family:'Libre Franklin',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.lg-head,.lg-main,.lg-foot{width:min(680px,calc(100% - 48px));margin:0 auto;box-sizing:border-box}
+.lg-head{display:flex;justify-content:space-between;align-items:center;padding-top:32px}
+.lg-mark{display:block;color:#F4F9FF;line-height:0;text-decoration:none;transition:opacity .3s ease}
+.lg-mark:hover{opacity:.82}
+.lg-mark svg{display:block;height:20px;width:auto}
+.lg-lang{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:#A9B0BA;text-decoration:none;transition:color .25s ease}
+.lg-lang:hover{color:#F4F9FF}
+.lg-main{flex:1 0 auto;padding:88px 0 96px}
+.lg h1{margin:0;font-size:clamp(32px,4.2vw,44px);line-height:1.1;font-weight:500;letter-spacing:-0.02em;color:#F4F9FF}
+.lg-sub{margin:20px 0 0;font-size:16px;line-height:1.6;color:#A9B0BA}
+.lg h2{margin:52px 0 14px;font-size:17px;line-height:1.35;font-weight:600;letter-spacing:-0.005em;color:#F4F9FF}
+.lg p,.lg li{margin:0;font-size:16px;line-height:1.65;color:#E0E5EB}
+.lg p+p{margin-top:12px}
+.lg ul,.lg ol{margin:0;padding-left:1.3em}
+.lg li{padding-left:.2em}
+.lg li+li{margin-top:10px}
+.lg li::marker{color:#7C848F}
+.lg p+ul,.lg p+ol,.lg ul+p,.lg ol+p{margin-top:14px}
+.lg dl{margin:0;display:grid;grid-template-columns:220px 1fr;column-gap:24px;row-gap:12px}
+.lg dt{margin:0;font-size:14px;line-height:26px;color:#A9B0BA}
+.lg dd{margin:0;font-size:16px;line-height:26px;color:#E0E5EB}
+.lg-main a{color:#F4F9FF;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:rgba(244,249,255,.35);text-underline-offset:3px;transition:text-decoration-color .25s ease}
+.lg-main a:hover{text-decoration-color:#F4F9FF}
+.lg-nw{white-space:nowrap}
+.lg-foot{display:flex;flex-wrap:wrap;gap:8px 24px;padding:24px 0 48px;border-top:1px solid #202831;font-size:12.5px;line-height:1.5;color:#A9B0BA}
+.lg-foot span{margin-right:auto}
+.lg-foot a{color:#A9B0BA;text-decoration:none;transition:color .25s ease}
+.lg-foot a:hover,.lg-foot a[aria-current]{color:#F4F9FF}
+.lg a:focus-visible{outline:2px solid #F4F9FF;outline-offset:3px;border-radius:2px}
+@media (max-width:600px){
+.lg-head{padding-top:20px}
+.lg-main{padding:56px 0 72px}
+.lg h2{margin-top:40px}
+.lg dl{grid-template-columns:1fr;row-gap:0}
+.lg dt{line-height:20px}
+.lg dd{margin-bottom:14px}
+.lg-foot{flex-direction:column;gap:10px;padding-bottom:40px}
+.lg-foot span{margin-right:0}
+}
+.js .lg-main{animation:none}
+.js .lg-main>*{opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.js .lg-main>.in{opacity:1;transform:none}
+.lg-foot a{padding-bottom:2px;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:color .25s ease,background-size .35s cubic-bezier(.2,.7,.2,1)}
+.lg-lang{background:linear-gradient(currentColor,currentColor) 0 calc(50% + 9px)/0 1px no-repeat;transition:color .25s ease,background-size .35s cubic-bezier(.2,.7,.2,1)}
+.lg-foot a:hover,.lg-lang:hover{background-size:100% 1px}
