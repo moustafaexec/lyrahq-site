@@ -18,26 +18,28 @@
   var lens = document.querySelector('.lens');
   if (!stage || !video) return;
 
+  // Chemin vers la racine du site : vide sur lyrahq.co, « ../ » sur lyrahq.co/fr/.
+  var BASE = stage.getAttribute('data-base') || '';
+
   // Deux films : 16/9 en paysage, vertical en portrait. Seul celui qui sert est téléchargé.
   var FILMS = {
-    desktop: { src: 'media/film-desktop.mp4', hd: 'media/film-desktop-2k.mp4', poster: 'media/poster-desktop.jpg', focusAt: 10.4, blur: 9, scale: 1.06 },
-    mobile: { src: 'media/film-mobile.mp4', poster: 'media/poster-mobile.jpg', focusAt: 6.4, blur: 8, scale: 1.08 }
+    desktop: { src: BASE + 'media/film-desktop.mp4', hd: BASE + 'media/film-desktop-2k.mp4', poster: BASE + 'media/poster-desktop.jpg', focusAt: 10.4, blur: 9, scale: 1.06 },
+    mobile: { src: BASE + 'media/film-mobile.mp4', poster: BASE + 'media/poster-mobile.jpg', focusAt: 6.4, blur: 8, scale: 1.08 }
   };
   var FADE = 0.45;     // fondu au noir à la fin du film
   var VOILE = 0.42;    // voile sur la boucle floue
   var MAIL = 'moustafa@lyrahq.co';
 
-  // Langue : français si le navigateur est en français, anglais sinon.
-  var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
-  var fr = /^fr\b/i.test(langs[0] || '');
+  // Langue : celle de la page. Anglais sur lyrahq.co, français sur lyrahq.co/fr/ (où mène lyrahq.fr).
+  var fr = /^fr\b/i.test(root.getAttribute('lang') || '');
   var T = fr ? {
-    lang: 'fr', cta: 'Être sur la liste', legal: 'Mentions légales', legalHref: 'fr/mentions-legales/',
+    lang: 'fr', cta: 'Être sur la liste', legal: 'Mentions légales', legalHref: BASE + 'fr/mentions-legales/',
     subject: 'Invitation LYRA',
     body: 'Bonjour LYRA,\n\nNom :\nCe que je fais (artiste, producteur, auteur, manager, label) :\nUn lien vers mon travail :\n',
     skip: 'Passer le film', replay: 'LYRA, revoir le film',
     film: "Film LYRA : un artiste sort de la cabine, s'assoit avec son contrat et s'apprête à signer."
   } : {
-    lang: 'en', cta: 'Request invite', legal: 'Legal', legalHref: 'legal/',
+    lang: 'en', cta: 'Request invite', legal: 'Legal', legalHref: BASE + 'legal/',
     subject: 'LYRA invite',
     body: 'Hi LYRA,\n\nName:\nWhat I do (artist, producer, songwriter, manager, label):\nA link to my work:\n',
     skip: 'Skip the film', replay: 'LYRA, replay the film',
@@ -49,7 +51,7 @@
     name: 'Nom', email: 'E-mail', role: 'Ce que vous faites', link: 'Lien vers votre travail', optional: 'facultatif',
     pick: 'Choisir', linkPh: 'Instagram, Spotify, SoundCloud…',
     roles: [['Artist', 'Artiste'], ['Producer', 'Producteur'], ['Songwriter', 'Auteur-compositeur'], ['Manager', 'Manager'], ['Label', 'Label'], ['Other', 'Autre']],
-    note: 'Ces informations servent uniquement à gérer votre invitation. ', privacy: 'Politique de confidentialité', privacyHref: 'fr/confidentialite/',
+    note: 'Ces informations servent uniquement à gérer votre invitation. ', privacy: 'Politique de confidentialité', privacyHref: BASE + 'fr/confidentialite/',
     send: 'Envoyer', sending: 'Envoi…', doneT: 'C’est noté.', doneS: 'Nous vous écrivons dès que votre accès ouvre.', close: 'Fermer',
     errFields: 'Indiquez votre nom, un e-mail valide et ce que vous faites.',
     errSend: 'L’envoi n’a pas abouti. Réessayez, ou écrivez à ' + MAIL + '.', sent: 'Demande envoyée'
@@ -59,7 +61,7 @@
     name: 'Name', email: 'Email', role: 'What you do', link: 'Link to your work', optional: 'optional',
     pick: 'Choose', linkPh: 'Instagram, Spotify, SoundCloud…',
     roles: [['Artist', 'Artist'], ['Producer', 'Producer'], ['Songwriter', 'Songwriter'], ['Manager', 'Manager'], ['Label', 'Label'], ['Other', 'Other']],
-    note: 'We only use these details to manage your invitation. ', privacy: 'Privacy policy', privacyHref: 'privacy/',
+    note: 'We only use these details to manage your invitation. ', privacy: 'Privacy policy', privacyHref: BASE + 'privacy/',
     send: 'Send', sending: 'Sending…', doneT: 'You’re on the list.', doneS: 'We will write to you as soon as your access opens.', close: 'Close',
     errFields: 'Add your name, a valid email and what you do.',
     errSend: 'That did not go through. Try again, or write to ' + MAIL + '.', sent: 'Request sent'
