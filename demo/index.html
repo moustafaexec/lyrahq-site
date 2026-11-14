@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LYRA demo, both screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600&family=Caveat:wght@600&family=Dancing+Script:wght@600&family=Homemade+Apple&family=Rock+Salt&family=Mrs+Saint+Delafield&family=Sacramento&family=Herr+Von+Muellerhoff&display=swap" rel="stylesheet">
+<style>
+/* Layout : une barre d'outils, puis deux ecrans cote a cote. A gauche le telephone, a droite le dashboard. */
+:root{
+  color-scheme: light;
+  --ink:#000912;        /* noir LYRA */
+  --paper:#F4F1EA;      /* ivoire, fond de page */
+  --surface:#FFFFFF;
+  --line:#E3DFD6;
+  --muted:#666A72;
+  --chrome:#C9CCD1;     /* argent */
+  --soft:#F7F5F0;
+  --ok:#1B7F4B; --ok-bg:#E5F4EC;
+  --info:#1D4ED8; --info-bg:#E6EDFD;
+  --warn:#8A5A00; --warn-bg:#FBF0D5;
+  --bad:#B42318; --bad-bg:#FBE9E7;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Barre du haut */
+.top{display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--ink);color:#fff;flex-wrap:wrap}
+.mark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.01em}
+.logo{width:30px;height:30px;border:1.5px solid #fff;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 3px 1px 0;font-family:var(--display);font-size:10px;letter-spacing:.02em;line-height:1}
+.mark small{display:block;font-weight:400;color:#AEB3BC;font-size:12px}
+.seg{display:flex;gap:2px;background:#151C27;border-radius:9px;padding:3px;margin-left:auto;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:#C7CBD3;padding:6px 12px;border-radius:7px;font-size:13px;font-weight:500}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink)}
+.seg button .n{opacity:.55;margin-right:5px;font-variant-numeric:tabular-nums}
+
+/* Bandeau : simulation, noms, options */
+.strip{display:flex;align-items:center;gap:14px 22px;padding:9px 20px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sim{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:999px}
+.sim i{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.who b{font-size:12.5px;font-weight:600}
+.who label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:2px}
+.who input{border:1px solid var(--line);border-radius:7px;padding:5px 9px;width:150px;background:var(--surface);font-size:13px}
+.opts{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.chk input{accent-color:var(--ink)}
+.viewsw{display:none;gap:2px;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px}
+.viewsw button{border:0;background:transparent;padding:5px 10px;border-radius:6px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.viewsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* Scene */
+.stage{flex:1;min-height:0;display:grid;grid-template-columns:412px minmax(0,1fr);gap:20px;padding:18px 20px 20px}
+.col{min-height:0;display:flex;flex-direction:column;gap:10px}
+.cap{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.cap h2{margin:0;font-size:13px;font-weight:600}
+.cap span{font-size:12px;color:var(--muted)}
+
+/* Telephone : une conversation de messagerie, sous marque LYRA */
+.phone{flex:1;min-height:460px;max-height:880px;width:100%;max-width:412px;align-self:center;background:#0B0E13;border-radius:48px;padding:9px;display:flex;flex-direction:column;box-shadow:inset 0 0 0 1.5px #2B303A,0 26px 50px -26px rgba(0,9,18,.6)}
+.screen{flex:1;min-height:0;border-radius:39px;overflow:hidden;display:flex;flex-direction:column;background:#E8E4DB;position:relative}
+.sbar{display:flex;align-items:center;justify-content:space-between;padding:11px 28px 3px;background:var(--surface);font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.sbar .ri{display:flex;gap:6px;align-items:center}
+.sbar svg{height:11px;width:auto}
+.chead{display:flex;align-items:center;gap:9px;padding:7px 12px 9px;background:var(--surface);border-bottom:1px solid var(--line)}
+.chead>svg{color:var(--ink);flex:none}
+.chead .av{width:38px;height:38px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex:none}
+.chead .av span{width:21px;height:21px;border:1px solid #fff;color:#fff;font-family:var(--display);font-size:6.5px;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 1.5px 0 0;line-height:1.1}
+.chead .nm{min-width:0;flex:1}
+.chead b{display:flex;align-items:center;gap:4px;font-size:15.5px;line-height:1.2}
+.chead b svg{width:15px;height:15px;color:#3B7A57}
+.chead small{color:var(--muted);font-size:12.5px}
+.chead .hic{display:flex;gap:16px;color:var(--ink)}
+.chead .hic svg{width:20px;height:20px}
+.thread{flex:1;min-height:0;overflow-y:auto;padding:10px 15px 10px;display:flex;flex-direction:column}
+.day{align-self:center;background:rgba(255,255,255,.9);color:var(--muted);font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:8px;margin:6px 0 4px;box-shadow:0 1px .5px rgba(0,9,18,.1)}
+.info{align-self:center;max-width:88%;text-align:center;background:#FBF4D9;color:#6A5718;font-size:11.5px;line-height:1.35;padding:6px 11px;border-radius:9px;margin:2px 0 4px;box-shadow:0 1px .5px rgba(0,9,18,.1)}
+.msg{max-width:83%;display:flex;flex-direction:column;gap:3px;margin-top:2px;animation:pop .16s ease-out}
+.msg.first{margin-top:8px}
+.msg.in{align-self:flex-start}
+.msg.out{align-self:flex-end}
+@keyframes pop{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+.bub{position:relative;padding:6px 9px 7px;border-radius:13px;font-size:14.5px;line-height:1.36;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 1px .5px rgba(0,9,18,.14)}
+.in .bub{background:var(--surface)}
+.out .bub{background:var(--ink);color:#fff}
+.msg.first.in .bub{border-top-left-radius:3px}
+.msg.first.out .bub{border-top-right-radius:3px}
+.msg.first .bub::before{content:"";position:absolute;top:0;width:9px;height:11px;background:inherit}
+.msg.first.in .bub::before{left:-7px;clip-path:polygon(100% 0,0 0,100% 100%)}
+.msg.first.out .bub::before{right:-7px;clip-path:polygon(0 0,100% 0,0 100%)}
+.bub .hdr{font-weight:600;display:block;margin-bottom:2px}
+.bub .ftr{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.bub .gap{display:inline-block;width:42px;height:1px}
+.out .bub .gap{width:62px}
+.meta{position:absolute;right:8px;bottom:4px;display:flex;align-items:center;gap:3px;font-size:10.5px;color:#8A8E96;line-height:1}
+.out .meta{color:#9BA1AC}
+.meta svg{width:17px;height:11px}
+.meta .c2{opacity:0;transition:opacity .15s}
+.dlv .meta .c2{opacity:1}
+.read .meta svg{color:#fff}
+.bub .q{display:block;background:rgba(255,255,255,.13);border-left:3px solid var(--chrome);border-radius:6px;padding:4px 8px 5px;margin:0 -2px 5px;font-size:12.5px;line-height:1.3;color:#D3D7DE;white-space:normal}
+.bub .q b{display:block;font-size:12px;color:#fff;font-weight:600}
+.rb{display:flex;flex-direction:column;gap:3px}
+.rb button{border:0;background:var(--surface);border-radius:11px;padding:10px;font-size:14.5px;font-weight:500;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 1px .5px rgba(0,9,18,.14);position:relative}
+.rb button svg{width:15px;height:15px;color:var(--muted)}
+.rb button:disabled{color:#9A9DA4;cursor:default}
+.rb button.pick{background:#DEE2E9;color:var(--ink)}
+.notes .rb button.path:not(:disabled)::after{content:"path";position:absolute;right:9px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ok);background:var(--ok-bg);padding:1px 6px;border-radius:999px}
+.notes .rb button.path:not(:disabled){box-shadow:0 0 0 1.5px var(--ok)}
+.docb{display:flex;gap:10px;align-items:center;background:#F1EEE7;border-radius:9px;padding:9px 10px;margin:-1px -3px 6px;white-space:normal}
+.docb .ic{width:32px;height:40px;border-radius:5px;background:#fff;border:1px solid #D8D4CA;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:8.5px;font-weight:700;color:#B42318;letter-spacing:.05em;flex:none}
+.docb b{display:block;font-size:13.5px;line-height:1.25;overflow-wrap:anywhere;font-weight:600}
+.docb small{color:var(--muted);font-size:11.5px}
+.tag{align-self:flex-start;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#7A7E86;padding:0 4px;display:none}
+.msg.out .tag{align-self:flex-end}
+.notes .tag{display:block}
+.tag.simu{color:var(--warn)}
+.typing{align-self:flex-start;background:var(--surface);border-radius:13px;border-top-left-radius:3px;padding:11px 13px;display:flex;gap:4px;margin-top:8px;box-shadow:0 1px .5px rgba(0,9,18,.14)}
+.typing i{width:6px;height:6px;border-radius:50%;background:#A9ADB5;animation:bl 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.35}30%{opacity:1}}
+.endc{align-self:center;text-align:center;font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.9);border-radius:8px;padding:4px 11px;margin-top:10px}
+.comp{display:flex;gap:8px;align-items:center;padding:8px 10px 12px;background:#F4F1EA;border-top:1px solid var(--line)}
+.comp .plus{color:var(--ink);display:flex}
+.comp .plus svg{width:24px;height:24px}
+.comp input{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:9px 14px;background:var(--surface);font-size:14.5px}
+.comp button{width:38px;height:38px;border-radius:50%;border:0;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.comp button svg{width:17px;height:17px}
+.sheet{position:absolute;inset:0;background:rgba(0,9,18,.42);display:flex;align-items:flex-end;z-index:5}
+.sheet[hidden]{display:none}
+.sheet .card{background:var(--surface);width:100%;border-radius:20px 20px 0 0;padding:8px 16px 20px;display:flex;flex-direction:column;gap:10px;max-height:84%;overflow:auto;border:0}
+.sheet .card::before{content:"";align-self:center;width:38px;height:4px;border-radius:2px;background:#D5D2CA;margin-bottom:4px}
+.sheet .card{position:relative}
+.sheet .x{position:absolute;top:10px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:#EFECE5;color:var(--ink);font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:1}
+.sheet dl{font-size:13px;gap:5px 12px;grid-template-columns:minmax(90px,auto) minmax(0,1fr)}
+.sheet .mention{font-size:11.5px;border-top:1px solid var(--line);padding-top:8px}
+.docb{cursor:pointer}
+.sheet h3{margin:0;font-size:16px;text-align:center;padding:0 34px}
+.sheet p{margin:0;color:var(--muted);font-size:13px}
+.sheet .row{display:flex;gap:10px;align-items:flex-start;padding:11px 4px;border-top:1px solid var(--line);cursor:pointer}
+.sheet .row input{margin-top:3px;accent-color:var(--ink)}
+.sheet .row b{display:block;font-size:14.5px}
+.sheet .row small{color:var(--muted)}
+.sheet .go{border:0;background:var(--ink);color:#fff;border-radius:999px;padding:12px;font-weight:600}
+.sheet .go:disabled{background:#B9BCC3}
+.sheet .pad{height:86px;border:1.5px dashed var(--chrome);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.hint{display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--muted);width:100%;max-width:412px;align-self:center}
+.notes .hint.on{display:flex}
+.hint b{color:var(--ink);font-weight:600}
+.hint button{margin-left:auto;border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:500;white-space:nowrap}
+.under{display:flex;gap:8px;flex-wrap:wrap;width:100%;max-width:412px;align-self:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:500}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Dashboard, sur la base shadcn-admin */
+.right{min-width:0}
+.dash{flex:1;min-height:0;display:grid;grid-template-columns:214px minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.side{border-right:1px solid var(--line);background:#FBFAF7;display:flex;flex-direction:column;padding:10px 8px;gap:14px}
+.team{display:flex;align-items:center;gap:9px;padding:6px}
+.team .sq{width:32px;height:32px;border-radius:8px;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.team .sq span{width:18px;height:18px;border:1px solid #fff;color:#fff;font-family:var(--display);font-size:6px;display:flex;align-items:flex-end;justify-content:flex-end;padding-right:1px;line-height:1.1}
+.team b{display:block;font-size:13.5px;line-height:1.2}
+.team small{color:var(--muted);font-size:11.5px}
+.grp{font-size:11.5px;color:var(--muted);font-weight:500;padding:0 8px 4px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:9px;border:0;background:transparent;text-align:left;padding:7px 8px;border-radius:7px;font-size:13.5px;color:#30343C}
+.nav button svg{width:16px;height:16px;flex:none}
+.nav button[aria-pressed="true"]{background:#EEEBE4;font-weight:600;color:var(--ink)}
+.side .foot{margin-top:auto;padding:8px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.dmain{min-width:0;min-height:0;display:flex;flex-direction:column}
+.dhead{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dhead h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.dhead p{margin:0;color:var(--muted);font-size:13px}
+.dhead .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tabs{display:inline-flex;gap:2px;background:#F1EEE7;border-radius:9px;padding:3px;margin:14px 20px 0}
+.tabs button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,9,18,.12)}
+.body{flex:1;min-height:0;overflow:auto;padding:14px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+.card>h3{margin:0;padding:12px 14px 0;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card>h3 small{font-weight:400;color:var(--muted);font-size:12px}
+.card .in{padding:10px 14px 13px}
+.kpi .in{padding-top:6px}
+.kpi .v{font-size:22px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.2}
+.kpi .v.t{font-size:16px}
+.kpi p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.kpi h3 svg{width:15px;height:15px;color:var(--muted)}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+dl{margin:0;display:grid;grid-template-columns:minmax(96px,auto) minmax(0,1fr);gap:7px 14px;font-size:13.5px}
+dt{color:var(--muted)}
+dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+dd.nil{color:#A6A9B0;font-weight:400}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;padding:6px 8px 6px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 8px 8px 0;border-bottom:1px solid #EFECE5;vertical-align:top;overflow-wrap:anywhere}
+tr:last-child td{border-bottom:0}
+td.num,th.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;background:#EEEBE4;color:#3A3E46}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.info{background:var(--info-bg);color:var(--info)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+code,.code{font-family:var(--mono);font-size:12.5px}
+td code{background:#F1EEE7;padding:1px 6px;border-radius:5px;white-space:nowrap}
+.empty{color:#9A9DA4;font-size:13px;padding:4px 0}
+.bar{height:8px;border-radius:999px;background:#EEEBE4;overflow:hidden;display:flex;margin:8px 0 10px}
+.bar i{display:block;height:100%}
+.bar i:nth-child(1){background:var(--ink)}.bar i:nth-child(2){background:#5B6170}.bar i:nth-child(3){background:#9AA0AC}.bar i:nth-child(4){background:var(--chrome)}
+.jr{display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.jr div{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px}
+.jr time{color:var(--muted);font-variant-numeric:tabular-nums}
+.circ{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.circ div{border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:13px}
+.circ b{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:4px}
+pre{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;background:#0B1220;color:#DCE1EA;border-radius:8px;padding:12px;overflow:auto;white-space:pre}
+.copy{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:3px 9px;font-size:12px;font-weight:500}
+
+/* Inspecteur des messages */
+.api{flex:1;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.api[hidden],.dash[hidden]{display:none}
+.api .lim{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;color:#30343C;display:flex;flex-wrap:wrap;gap:6px 18px}
+.api .lim b{font-weight:600}
+.api .list{flex:1;min-height:0;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.pm{display:flex;flex-direction:column;gap:6px}
+.pm .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+.pm .h code{background:#F1EEE7;padding:1px 6px;border-radius:5px}
+
+.ctl{display:none;align-items:center;gap:8px;flex-wrap:wrap}
+.lastm{font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60ch}
+body[data-mode="dash"] .ctl{display:flex}
+body[data-mode="dash"] .left,body[data-mode="phone"] .right{display:none}
+body[data-mode="dash"] .stage,body[data-mode="phone"] .stage{grid-template-columns:minmax(0,1fr)}
+body[data-mode="phone"] .left{width:100%;max-width:460px;margin:0 auto}
+body:not([data-mode="both"]) #viewsw{display:none}
+/* Barre unique : parcours, actions, noms. Le telephone garde ses proportions et se met a l'echelle. */
+.top{gap:8px 14px;padding:8px 16px}
+.seg{margin-left:0;flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.seg button{white-space:nowrap}
+.acts{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+.tb{border:1px solid #2B3443;background:#151C27;color:#E6E9EE;border-radius:8px;padding:6px 11px;font-size:13px;font-weight:500;white-space:nowrap}
+.tb.dark{background:#fff;color:var(--ink);border-color:#fff}
+.tb[aria-expanded="true"]{background:#2B3443}
+.top .chk{color:#C7CBD3}
+.top .chk input{accent-color:#fff}
+.top .viewsw{background:#151C27;border-color:#2B3443}
+.top .viewsw button{color:#C7CBD3}
+.top .viewsw button[aria-pressed="true"]{background:#fff;color:var(--ink)}
+.names{display:flex;align-items:flex-end;gap:10px 18px;flex-wrap:wrap;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.names[hidden]{display:none}
+.names p{margin:0;font-size:12.5px;color:var(--muted);max-width:110ch}
+.bar2{display:flex;align-items:center;gap:6px 14px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--line);min-height:40px;flex-wrap:wrap}
+.bar2 #capstep{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.hint{display:flex;visibility:hidden;align-items:center;gap:8px;padding:0;background:none;border:0;border-radius:0;width:auto;max-width:none;align-self:auto;font-size:12.5px;color:var(--muted);min-width:0}
+.notes .hint.on{visibility:visible}
+.hint button{margin-left:0}
+.stage{grid-template-columns:auto minmax(0,1fr);padding:14px 20px 16px}
+.left{align-items:center}
+.phone{width:380px;height:760px;flex:none;min-height:0;max-height:none;max-width:none;align-self:auto}
+body[data-mode="phone"] .left{max-width:none;margin:0;width:auto}
+body[data-mode="dash"] #b-next,body[data-mode="dash"] #b-reset{display:none}
+@media (max-width:1180px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .g2{grid-template-columns:minmax(0,1fr)} .circ{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:1400px){ .mark small{display:none} }
+@media (max-width:980px){
+  html,body{height:auto}
+  .seg{order:3;width:100%}
+  .stage{grid-template-columns:minmax(0,1fr);padding:12px 12px 16px}
+  .viewsw{display:inline-flex}
+  body[data-mode="both"] .stage[data-view="tel"] .right,body[data-mode="both"] .stage[data-view="dash"] .left{display:none}
+  .dash{grid-template-columns:minmax(0,1fr);min-height:560px}
+  .side{flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:8px}
+  .side .foot,.grp{display:none}
+  .nav{flex-direction:row;flex-wrap:wrap}
+  .api{min-height:560px}
+  .acts{margin-left:0}
+  .mark small{display:none}
+}
+@media (max-width:520px){
+  .kpis{grid-template-columns:minmax(0,1fr)} .who input{width:128px}
+  .stage{padding:8px}
+  .phone{border-radius:0;padding:0;box-shadow:none;background:transparent}
+  .screen{border-radius:16px}
+  .tb{padding:6px 9px}
+}
+/* Page plein ecran dans le telephone : le contrat a lire, valider et signer, et la verification d'identite */
+:root{--go:#1DAB61}
+.wv{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:#ECE9E2;transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.wv[hidden]{display:none}
+.wv.on{transform:none}
+.wvh{display:flex;align-items:center;gap:4px;padding:7px 12px 7px 4px;background:var(--surface);border-bottom:1px solid var(--line);flex:none}
+.wvback{border:0;background:transparent;color:var(--go);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+.wvback svg{width:26px;height:26px}
+.wvt{min-width:0;flex:1}
+.wvt b{display:block;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wvt small{display:block;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wvp{height:3px;flex:none;background:#E1DDD3}
+.wvp i{display:block;height:100%;width:0;background:var(--go)}
+.wvb{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:10px 10px 18px;outline:0}
+.wvf{flex:none;background:var(--surface);border-top:1px solid var(--line);padding:10px 12px 14px;display:flex;flex-direction:column;gap:9px}
+.wvf:empty{display:none}
+.wvf p{margin:0;font-size:11.5px;color:var(--muted);text-align:center}
+.gobtn{border:0;background:var(--go);color:#fff;border-radius:999px;padding:12px 16px;font-size:15.5px;font-weight:600;width:100%}
+.gobtn:disabled{background:#B9BCC3}
+.gobtn.line{background:transparent;color:var(--go);box-shadow:inset 0 0 0 1.5px var(--go);padding:10px 16px;font-size:14px}
+.steps2{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--muted);font-weight:500}
+.steps2 b{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;background:#E4E1D9;color:var(--muted)}
+.steps2 b.on{background:var(--go);color:#fff}
+.steps2 i{width:22px;height:2px;background:#D5D2CA;margin:0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 2px 8px}
+.chips span{font-size:11px;font-weight:600;background:#fff;border:1px solid var(--line);color:#30343C;padding:3px 9px;border-radius:999px}
+.chips span.ok{background:var(--ok-bg);border-color:transparent;color:var(--ok)}
+.paper{background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,9,18,.18);padding:20px 16px 22px;font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:12.5px;line-height:1.5;color:#111;overflow-wrap:anywhere}
+.paper .head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #C9C9C9;padding-bottom:6px;margin-bottom:16px}
+.paper .head b{font-family:var(--font);font-weight:700;letter-spacing:.14em;font-size:11px}
+.paper .head i{flex:1;font-size:10.5px;color:#666;text-align:center}.paper .head .lg{height:16px;width:auto;flex:none;display:block}.paper .foot{display:block;border-top:1px solid #C9C9C9;margin-top:18px;padding-top:6px;font-size:10.5px;font-style:italic;color:#666}
+.paper h3{font-size:15px;text-align:center;text-decoration:underline;margin:0 0 4px;text-wrap:balance}
+.paper h4{font-size:13px;text-align:center;text-decoration:underline;margin:0 0 16px}
+.paper h5{font-size:13.5px;text-align:center;text-decoration:underline;margin:18px 0 10px}
+.paper h6{font-size:12.5px;text-decoration:underline;margin:16px 0 6px}
+.paper.en h5,.paper.en h6{text-decoration:none}
+.paper .box{border:1px solid #111;padding:10px;text-align:center;margin-bottom:14px}
+.paper .box b{display:block}
+.paper .box i{text-decoration:underline}
+.paper p{margin:0 0 9px;text-align:justify}
+.paper p.l{font-weight:700;text-align:left}
+.paper p.lu{font-weight:700;text-decoration:underline;text-align:left;margin-top:16px}
+.paper p.d{font-style:italic;text-align:left}
+.paper hr{border:0;border-top:1px solid #808080;margin:13px 0 14px}
+.paper ul{list-style:none;margin:0 0 9px;padding:0 0 0 22px}
+.paper li{position:relative;margin-bottom:4px;text-align:justify}
+.paper li::before{content:"-";position:absolute;left:-13px}
+.paper .tw{overflow-x:auto;margin:0 0 13px;padding:0 1px 1px 0;-webkit-overflow-scrolling:touch}
+.paper table{width:100%;border-collapse:collapse;font-size:11.5px}
+.paper table.wide{min-width:540px}
+.paper th,.paper td{border:1px solid #808080;padding:4px 6px;text-align:left;vertical-align:top}
+.paper tr:last-child td{border-bottom:1px solid #808080}
+.paper .nw{white-space:nowrap}
+.paper .pb{border-top:1px dashed #D5D2CA;margin:20px -16px;height:0}
+.paper .sigs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px;margin:8px 0 14px}
+.paper .sigs>div b,.paper .sigs>div>span{display:block}
+.paper .sigs .zone{margin-top:8px;min-height:54px;border-bottom:1px solid #808080;position:relative;display:flex;align-items:flex-end}
+.paper .sigs .zone small{font-size:10px;color:#999;font-style:italic;padding-bottom:2px}
+.paper .sigm{font-family:var(--font);font-size:9.5px;color:#4A4F57;margin-top:3px;line-height:1.3}
+.sg{display:inline-block;line-height:1.1;color:#1A2E6E;transform-origin:left bottom;white-space:nowrap;padding:4px 4px 3px}
+.sg img{height:48px;display:block}
+.sg.s-artiste{font-family:"Caveat",cursive;font-size:30px;font-weight:600;transform:rotate(-4deg)}
+.sg.s-representant{font-family:"Dancing Script",cursive;font-size:25px;font-weight:600;color:#15171C;transform:rotate(-3deg)}
+.sg.s-compositeur{font-family:"Homemade Apple",cursive;font-size:17px;color:#0E2A5C;transform:rotate(-5deg)}
+.sg.s-invite{font-family:"Rock Salt",cursive;font-size:14px;color:#15171C;transform:rotate(-6deg)}
+.sg.s-prodinvite{font-family:"Mrs Saint Delafield",cursive;font-size:36px;color:#1D3FA0;transform:rotate(-3deg)}
+.sg.s-coauteur{font-family:"Sacramento",cursive;font-size:30px;color:#22304F;transform:rotate(-4deg)}
+.sg.s-licencie{font-family:"Herr Von Muellerhoff",cursive;font-size:36px;color:#15171C;transform:rotate(-2deg)}
+.paper td .sg{zoom:.66;padding:2px 0}
+.sg.s-gerant{font-family:"Caveat",cursive;font-size:30px;font-weight:600;color:#15171C;transform:rotate(-4deg)}
+.sg.s-gerant img{filter:grayscale(1) brightness(.2)}
+.sgnew{animation:ink .8s ease-out}
+@keyframes ink{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+.padw{position:relative;border:1.5px dashed var(--chrome);border-radius:12px;background:#FCFBF8;height:112px;overflow:hidden;touch-action:none}
+.padw canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.padw span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#A3A7AE;font-size:13px;pointer-events:none}
+.padw.ink span{display:none}
+.padw img{position:absolute;inset:6px 12px;width:calc(100% - 24px);height:calc(100% - 12px);object-fit:contain;pointer-events:none}
+.padw.kept canvas{pointer-events:none}
+.padrow{display:flex;gap:8px;align-items:center}
+/* Le code de securite : la banniere du SMS, les six cases, le clavier et sa suggestion */
+.smsb{position:absolute;left:8px;right:8px;top:8px;z-index:9;display:flex;gap:10px;align-items:flex-start;text-align:left;border:0;background:rgba(248,248,250,.98);border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,9,18,.3);color:#111;transform:translateY(-150%);transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+.smsb.on{transform:none}
+.smsb .ic{width:34px;height:34px;border-radius:9px;background:#34C759;color:#fff;flex:none;display:flex;align-items:center;justify-content:center}
+.smsb .ic svg{width:21px;height:21px}
+.smsb .tx{display:flex;flex-direction:column;min-width:0;flex:1;font-size:13px;line-height:1.3}
+.smsb .tx b{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.smsb .tx small{font-weight:400;color:#8A8F98;font-size:11px}
+.otpb{display:flex;gap:7px;justify-content:center;margin:8px 0 0;cursor:pointer;outline:0}
+.otpb span{width:38px;height:46px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1.5px #D5D2CA;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#111}
+.otpb span:nth-child(3){margin-right:9px}
+.otpb span.cur{box-shadow:inset 0 0 0 2px var(--go)}
+.otpb.ok span{box-shadow:inset 0 0 0 2px var(--go);color:var(--go)}
+.otpb.ko{animation:shake .32s}
+@keyframes shake{20%{transform:translateX(-6px)}50%{transform:translateX(5px)}80%{transform:translateX(-3px)}}
+.otpm{min-height:17px;font-size:12.5px;color:#B3261E;text-align:center}
+.otpb.ok+.otpm{color:var(--go);font-weight:600}
+.lnk{border:0;background:transparent;color:var(--go);font-size:13px;font-weight:600;padding:4px 8px}
+.wvf .kb{margin:0 -12px -14px;background:#D3D6DB;padding:8px 8px 12px;display:flex;flex-direction:column;gap:7px;animation:kbup .26s cubic-bezier(.2,.8,.2,1)}
+.wvf .kb[hidden]{display:none}
+@keyframes kbup{from{transform:translateY(40%);opacity:.3}to{transform:none;opacity:1}}
+.otps{border:0;background:#F4F5F7;border-radius:9px;padding:5px 12px 6px;display:flex;flex-direction:column;align-items:center;width:100%;color:#111;box-shadow:0 1px 0 rgba(0,0,0,.14)}
+.otps b{font-size:17px;letter-spacing:.04em;font-weight:600}
+.otps small{font-size:10.5px;color:#6B7079}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kp button{border:0;background:#fff;border-radius:8px;height:40px;font-size:20px;font-weight:500;color:#111;box-shadow:0 1px 0 rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+.kp button:active{background:#E6E8EC}
+.kp button svg{width:24px;height:24px}
+.kp button[data-k="<"]{background:transparent;box-shadow:none}
+.padrow .gobtn{flex:1}
+.padrow .clr{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:11px 14px;font-size:13.5px;font-weight:500;color:#30343C}
+.kyc{display:flex;flex-direction:column;gap:12px;align-items:center;padding:10px 6px}
+.kyc h4{margin:8px 0 0;font-size:17px;text-align:center;text-wrap:balance}
+.kyc p{margin:0;font-size:13px;color:var(--muted);text-align:center;max-width:30ch}
+.cam{position:relative;width:100%;max-width:320px;aspect-ratio:4/3;border-radius:18px;background:radial-gradient(120% 90% at 50% 40%,#232A36,#0B0E13);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.cam.face{aspect-ratio:3/4;max-width:230px}
+.cam .idc{width:66%}
+.cam .fc{height:72%;margin-top:10%}
+.cam .frame{position:absolute;inset:15% 9%;border-radius:12px;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 0 999px rgba(4,6,10,.42)}
+.cam.face .frame{inset:10% 16%;border-radius:50%}
+.cam .scanl{position:absolute;left:9%;right:9%;top:15%;height:2px;background:var(--go);box-shadow:0 0 12px 2px rgba(29,171,97,.85);opacity:0}
+.cam.run .scanl{opacity:1;animation:scan 1.1s ease-in-out forwards}
+@keyframes scan{from{top:15%}to{top:85%}}
+.cam .okm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.cam.done .okm{opacity:1;background:rgba(11,61,36,.6)}
+.cam .okm svg{width:64px;height:64px;color:#fff}
+.cam.flash::after{content:"";position:absolute;inset:0;background:#fff;animation:fl .4s ease-out forwards}
+@keyframes fl{from{opacity:.95}to{opacity:0}}
+.kyc .sim2{font-size:11.5px;line-height:1.35;color:#6A5718;background:#FBF4D9;border-radius:9px;padding:6px 11px;text-align:center;max-width:320px}
+.kyc .bigok{width:84px;height:84px;border-radius:50%;background:var(--go);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:36px}
+.kyc .bigok svg{width:46px;height:46px}
+.docb .ic.sgn{color:var(--ok)}
+.seeb{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% + 6px);margin:0 -3px 6px;border:0;border-top:1px solid #E4E0D6;background:transparent;color:var(--go);font-weight:600;font-size:13.5px;padding:8px 4px 2px}
+.seeb svg{width:16px;height:16px}
+@media (prefers-reduced-motion:reduce){ .wv,.smsb{transition:none} .wvf .kb,.otpb.ko,.sgnew,.cam.run .scanl,.cam.flash::after{animation:none} }
+/* Petits ecrans : la conversation ou le dossier d'abord. Une seule ligne de commandes, le reste se deplie. */
+#b-more{display:none}
+@media (max-width:980px){
+  .side .nav{display:none}
+}
+@media (max-width:520px){
+  .top{padding:6px 8px;gap:6px}
+  .mark{display:none}
+  .acts{display:contents}
+  .seg{order:1;flex:1 1 0;width:auto;min-width:0}
+  #b-next{order:2}
+  #b-more{order:3;display:inline-block}
+  #viewsw{order:4;width:100%}
+  #viewsw button{flex:1}
+  #b-follow{order:5;flex:1 0 100%}
+  #b-reset,#b-names,.top .chk{order:6;display:none}
+  .top.more #b-names,.top.more .chk{display:inline-flex}
+  body:not([data-mode="dash"]) .top.more #b-reset{display:inline-block}
+  .names{padding:8px 10px}
+  .bar2{display:none}
+  body.notes:not([data-mode="dash"]) .bar2{display:flex;min-height:46px;padding:5px 10px}
+  body.notes:has(.stage[data-view="dash"]) .bar2{display:none}
+  .bar2 .sim,.bar2 #capstep{display:none}
+  .bar2{position:relative}
+  body.notes:not([data-mode="dash"]) .bar2 #capstep{display:block;position:absolute;left:10px;top:50%;transform:translateY(-50%);margin:0}
+  body.notes .bar2:has(.hint.on) #capstep{display:none}
+  .hint{font-size:12px;gap:8px;width:100%}
+  .hint button{margin-left:auto;flex:none}
+  .stage{padding:0}
+  body[data-mode="dash"] .stage,body[data-mode="both"] .stage[data-view="dash"]{padding:8px}
+  .left{align-items:center}
+  .screen{border-radius:0}
+  .sbar{display:none}
+  .chead{padding-top:9px}
+  .comp input{font-size:17px}
+  .right{gap:8px}
+  .cap h2{display:none}
+  #rsw{width:100%}
+  #rsw button{flex:1}
+  .ctl{gap:6px}
+  .ctl .btn{padding:6px 6px;font-size:12px;white-space:nowrap;flex:1 1 auto}
+  .lastm{flex:1 0 100%;max-width:100%}
+  .dash{min-height:0;border-radius:10px}
+  .side{display:none}
+  .dhead{padding:10px 12px;gap:6px 10px}
+  .dhead h1{font-size:17px}
+  .dhead .sp{margin-left:0}
+  .tabs{display:flex;margin:10px 12px 0}
+  .tabs button{flex:1;padding:6px 6px;font-size:12.5px}
+  .body{padding:10px 12px 16px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .kpi .v{font-size:18px}
+  .kpi .v.t{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){ .typing i{animation:none} }
+.msg.out .docb{color:var(--ink);cursor:default;margin-bottom:4px}
+.comp .plus.on{color:var(--go);cursor:pointer;animation:plus 1.1s ease-in-out infinite}
+@keyframes plus{50%{transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.comp .plus.on{animation:none}}
+.jr div{grid-template-columns:62px minmax(0,1fr)}
+.jr time{white-space:nowrap}
+.dash td{overflow-wrap:break-word}
+.cr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:12px 0 6px;font-size:12.5px}
+.cr:first-child{margin-top:0}
+.cr b{font-weight:600}
+.cr code{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.cr.lk{justify-content:center;text-align:center;color:var(--muted);font-size:11.5px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding:6px 0;margin:12px 0 0}
+</style>
+</head>
+<body class="notes">
+
+<header class="top">
+  <div class="mark"><div class="logo" aria-hidden="true">LYRA</div><div>LYRA demo<small>Clickable prototype, the thread and the dashboard</small></div></div>
+  <div class="seg" id="seg" role="group" aria-label="Journeys"></div>
+  <div class="acts">
+    <button type="button" class="tb dark" id="b-next" title="Play this step's answer on the path">Advance</button>
+    <button type="button" class="tb" id="b-more" aria-expanded="false" aria-label="More controls">More</button>
+    <button type="button" class="tb" id="b-follow" hidden></button>
+    <button type="button" class="tb" id="b-reset">Restart</button>
+    <button type="button" class="tb" id="b-names" aria-expanded="false" aria-controls="names">Names</button>
+    <label class="chk" for="o-notes"><input type="checkbox" id="o-notes" checked>Annotations</label>
+    <div class="viewsw" id="viewsw" role="group" aria-label="Screen shown">
+      <button type="button" data-v="tel" aria-pressed="true">Phone</button>
+      <button type="button" data-v="dash" aria-pressed="false">Dashboard</button>
+    </div>
+  </div>
+</header>
+
+<div class="names" id="names" hidden>
+  <div class="who">
+    <label for="f-prenom">First name or stage name<input id="f-prenom" placeholder="Sami" autocomplete="off"></label>
+    <label for="f-societe">Company<input id="f-societe" placeholder="Sami Sound LLC" autocomplete="off"></label>
+    <label for="f-titre">Song title<input id="f-titre" placeholder="Left Bank" autocomplete="off"></label>
+    <label for="f-representant">Company signatory<input id="f-representant" placeholder="Lena Morris" autocomplete="off"></label>
+    <label for="f-compositeur">Producer<input id="f-compositeur" placeholder="Jay Brooks" autocomplete="off"></label>
+    <label for="f-invite">Featured artist<input id="f-invite" placeholder="Oz" autocomplete="off"></label>
+    <label for="f-prodinvite">Featured artist's label<input id="f-prodinvite" placeholder="Brume Records" autocomplete="off"></label>
+    <label for="f-coauteur">Co-writer<input id="f-coauteur" placeholder="Ingrid Solvik" autocomplete="off"></label>
+    <label for="f-signataire">Distributor signatory<input id="f-signataire" placeholder="Authorized Signatory" autocomplete="off"></label>
+  </div>
+  <p>Every name can be changed, here or in the thread. It carries through the thread, the dashboard, the contracts and the signatures. Left empty, the fictional example applies. The distributor signatory is set here: left empty, Believe signs by function. Same name for the artist and the company signatory: the artist also signs for the company.</p>
+</div>
+
+<div class="bar2">
+  <span class="sim"><i></i>Simulation. Nothing is actually sent.</span>
+  <div class="hint" id="hint"><span id="hinttxt"></span><button type="button" id="hintbtn">Insert the example</button></div>
+  <span id="capstep"></span>
+</div>
+
+<main class="stage" id="stage" data-view="tel">
+  <section class="col left" aria-label="The artist's phone">
+    <div class="phone">
+      <div class="screen">
+        <div class="sbar" aria-hidden="true"><span id="clock"></span><span class="ri">
+          <svg viewBox="0 0 18 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx=".8"/><rect x="5" y="5" width="3" height="6" rx=".8"/><rect x="10" y="2.5" width="3" height="8.5" rx=".8"/><rect x="15" y="0" width="3" height="11" rx=".8"/></svg>
+          <svg viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 4a10 10 0 0 1 14 0"/><path d="M3.6 6.6a6.3 6.3 0 0 1 8.8 0"/><circle cx="8" cy="9.4" r="1" fill="currentColor" stroke="none"/></svg>
+          <svg viewBox="0 0 26 11" fill="none"><rect x=".6" y=".6" width="22" height="9.8" rx="2.6" stroke="currentColor" stroke-opacity=".45"/><rect x="2" y="2" width="16" height="7" rx="1.5" fill="currentColor"/><rect x="23.6" y="3.6" width="1.8" height="3.8" rx=".9" fill="currentColor" fill-opacity=".45"/></svg>
+        </span></div>
+        <div class="chead">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          <div class="av" aria-hidden="true"><span>LYRA</span></div>
+          <div class="nm"><b>LYRA<svg viewBox="0 0 24 24" fill="currentColor" aria-label="Verified account"><path d="M12 2l2.4 1.8 3-.1 1 2.8 2.4 1.8-.9 2.9.9 2.9-2.4 1.8-1 2.8-3-.1L12 22l-2.4-1.8-3 .1-1-2.8L3.2 15.7l.9-2.9-.9-2.9 2.4-1.8 1-2.8 3 .1z"/><path d="m8.5 12.2 2.4 2.4 4.6-5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></b><small id="presence">online</small></div>
+          <span class="hic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          </span>
+        </div>
+        <div class="thread" id="thread" aria-live="polite"></div>
+        <form class="comp" id="comp" autocomplete="off">
+          <span class="plus" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          <label class="sr" for="field">Your message</label>
+          <input id="field" placeholder="Message">
+          <button type="submit" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l1.9 6.9L14 12l-8.7 1.5z"/></svg></button>
+        </form>
+        <div class="sheet" id="sheet" hidden><div class="card" id="sheetcard" role="dialog" aria-modal="true"></div></div>
+        <div class="wv" id="wv" hidden role="dialog" aria-modal="true" aria-labelledby="wvtitle">
+          <div class="wvh">
+            <button type="button" class="wvback" id="wvback" aria-label="Back to the thread"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></svg></button>
+            <div class="wvt"><b id="wvtitle"></b><small id="wvsub"></small></div>
+          </div>
+          <div class="wvp" aria-hidden="true"><i id="wvbar"></i></div>
+          <div class="wvb" id="wvbody" tabindex="0"></div>
+          <div class="wvf" id="wvfoot"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="col right" aria-label="The distributor's screen">
+    <div class="cap">
+      <h2 id="rtitle">What the distributor sees</h2>
+      <div class="viewsw" style="display:inline-flex" id="rsw" role="group" aria-label="Right panel">
+        <button type="button" data-r="dash" aria-pressed="true">Dashboard</button>
+        <button type="button" data-r="api" aria-pressed="false">API messages</button>
+      </div>
+    </div>
+
+    <div class="ctl" id="ctl"><button type="button" class="btn dark" id="c-next">Advance one step</button><button type="button" class="btn" id="c-play">Play the journey</button><button type="button" class="btn" id="c-reset">Restart</button><span class="lastm" id="lastm"></span></div>
+    <div class="dash" id="dash">
+      <aside class="side">
+        <div class="team"><div class="sq" aria-hidden="true"><span>LYRA</span></div><div><b>LYRA</b><small>Open files</small></div></div>
+        <div>
+          <div class="grp">File</div>
+          <div class="nav" id="nav">
+            <button type="button" data-t="live" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>What's happening</button>
+            <button type="button" data-t="sys" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h4l3-8 4 16 3-8h2"/></svg>What your system receives</button>
+          </div>
+        </div>
+        <div class="foot">Simulation under the LYRA brand. No real data.</div>
+      </aside>
+      <div class="dmain">
+        <div class="dhead">
+          <div><h1 id="dtitle"></h1><p id="dsub"></p></div>
+          <div class="sp"><span class="pill warn">Simulation</span><span class="pill" id="dstep"></span></div>
+        </div>
+        <div><div class="tabs" role="tablist" id="tabs">
+          <button role="tab" type="button" data-t="live" aria-selected="true">What's happening</button>
+          <button role="tab" type="button" data-t="sys" aria-selected="false">What your system receives</button>
+        </div></div>
+        <div class="body" id="dbody"></div>
+      </div>
+    </div>
+
+    <div class="api" id="api" hidden>
+      <div class="lim">
+        <span><b>Reply buttons:</b> 3 at most, 20 characters each.</span>
+        <span><b>List:</b> 10 rows at most, 24 characters per title.</span>
+        <span><b>Free text:</b> the answer comes in as a <code>text</code> message.</span>
+      </div>
+      <div class="list" id="apilist"></div>
+    </div>
+  </section>
+</main>
+
+<script type="application/json" id="contrats-data">{"docs":{"01":"#PROFILE US\n#T EXCLUSIVE LICENSE AND SERVICES AGREEMENT\n#S [[company_name]] and [[distributor_name]]\n#E Effective as of [[effective_date]]\n#H DEAL TERMS\n#W 32,68\n|| Term | Agreed value\n| Licensor | [[company_name]], [[company_description]] (\"Licensor\")\n| Distributor | [[distributor_name]], [[distributor_description]] (\"Distributor\")\n| Artist | [[artist_legal_name]], professionally known as [[artist_stage_name]] (\"Artist\"), who joins for Section 3 only\n| Repertoire | The masters listed in Schedule A (the \"Masters\")\n| Territory | [[territory]]\n| Channels | [[channels]]\n| Delivery date | [[master_delivery_date]]\n| Target release date | [[release_date]]\n| License term | [[license_term]], counted from the first release of each Master\n| Revenue share | [[licensor_share]]% of Net Receipts to Licensor\n| Advance | US$[[advance_amount]], payable [[advance_schedule]]\n| Recoupment | From Licensor's revenue share under this Agreement only. Not returnable\n| Services | [[services]]\n| Option | [[option]]\n| SoundExchange | [[soundexchange_collector]]\n| Content identification | [[content_id]]\n| Statements | [[statement_period]], within [[statement_days]] days after the period ends\n| Payment | Within [[payment_days]] days after each statement\n| Tax form on file | [[licensor_tax_form]]\n| Governing law and forum | [[governing_law_forum]]\n| Signature | [[signature_level]]\n| Version | Version [[version]] dated [[effective_date]]\nThe Deal Terms prevail over the Standard Terms. The Schedules are part of this Agreement.\n#H STANDARD TERMS\n---\n#A 1. DEFINITIONS\n1.1 \"Net Receipts\" means all sums actually received by or credited to Distributor from the exploitation of the Masters, in any medium and anywhere in the Territory, net of sales taxes and with no other deduction.\n1.2 \"Digital Services\" means the streaming, download and user-content services to which Distributor delivers the Masters.\n1.3 \"Term\" means the period from signature to the end of the license term of the last Master.\n#A 2. EXCLUSIVE LICENSE\n2.1 Licensor grants Distributor, for the Territory and the Term, the exclusive right to do the following with the Masters, through the channels stated in the Deal Terms:\n- (a) reproduce and distribute them, in digital form and, where the Deal Terms allow, on physical formats;\n- (b) make them available by streaming and by download;\n- (c) perform them publicly by digital audio transmission;\n- (d) claim and monetize their use in user content;\n- (e) use excerpts, artwork and approved materials to promote them.\n2.2 Licensor remains the owner of the Masters. This Agreement is a license. It transfers no ownership of the copyright and grants no right in the songs.\n2.3 Synchronization, sampling and any use not listed in Section 2.1 need Licensor's written consent.\n#A 3. ARTIST'S JOINDER\n3.1 Artist confirms having assigned the Masters to Licensor by the assignment listed in Schedule B.\n3.2 Artist allows Distributor to use Artist's approved name, approved photographs and approved biography to exploit and promote the Masters. This covers no endorsement, no merchandise and no digital replica of Artist's voice or likeness.\n3.3 During the license term of a Master, and to the extent the applicable law allows, Artist will not record the same song for release by anyone else.\n3.4 Artist gives no personal guarantee of Licensor's obligations. Artist is bound by this Section 3 and by nothing else in this Agreement.\n#A 4. DELIVERY\n4.1 Licensor will deliver each Master by the delivery date: the audio file, the artwork, complete credits, the ISRC, and the ISWC of the song where it exists.\n4.2 Licensor will deliver with it the documents listed in Schedule B. Distributor may rely on the identity checks recorded there.\n4.3 Distributor will report any technical defect within ten business days after delivery. After that, the Master is accepted.\n#A 5. TERM AND END OF TERM\n5.1 The license term of each Master runs from its first release, for the period stated in the Deal Terms.\n5.2 At the end of a license term, Distributor will take the Master down from the Digital Services within thirty days. It may sell off physical stock for six months, without manufacturing more.\n5.3 Distributor will then return the files and the metadata to Licensor on request. It will pay Licensor its share of the sums received later for the license term.\n5.4 Any option stated in the Deal Terms is exercised in writing before the end of the Term. An option is never exercised by silence.\n#A 6. DISTRIBUTOR'S COMMITMENTS\n6.1 Distributor will release each Master on the Digital Services by the target release date, or on a later date that Licensor approves in writing.\n6.2 Distributor will keep each Master available during its license term, except where a Digital Service or the law requires a takedown.\n6.3 Distributor will provide the services stated in the Deal Terms. If they include label services, Schedule C applies.\n6.4 Artwork, pricing outside Distributor's standard terms, and any marketing that uses Artist's name or likeness need Licensor's approval. Approval is given in writing. Silence is not approval.\n#A 7. REVENUE SHARE, ADVANCE AND RECOUPMENT\n7.1 Distributor will pay Licensor the revenue share stated in the Deal Terms on Net Receipts. Distributor keeps the balance as its entire compensation, including for the services of Schedule C, unless Schedule C states a budget or a fee.\n7.2 Distributor will pay the advance as stated in the Deal Terms. The advance is recoupable from Licensor's revenue share under this Agreement and from nothing else. It is not returnable.\n7.3 Distributor will deduct no cost from Licensor's revenue share, other than a cost listed in Schedule C and approved by Licensor in writing. Distributor will not set off sums due under any other agreement.\n#A 8. STATEMENTS, PAYMENT AND AUDIT\n8.1 Distributor will send statements for the periods and within the time stated in the Deal Terms. Each statement shows Net Receipts by Master, by Digital Service and by territory.\n8.2 Distributor will pay within the time stated in the Deal Terms. Before the first payment, Licensor will give Distributor the tax form stated in the Deal Terms. Without it, Distributor may withhold the tax that the law requires.\n8.3 Once a year, on thirty days' notice, Licensor may have a certified public accountant audit the statements of the last three years. Distributor will pay any shortfall. It will also pay the cost of the audit if the shortfall reaches five percent.\n#A 9. THIRD PARTIES PAID BY LICENSOR\nLicensor alone pays the artists, featured artists, producers and other contributors to the Masters, as listed in Schedule B. Licensor obtains and pays for any sample clearance.\n#A 10. SONGS AND MECHANICAL ROYALTIES\n10.1 This Agreement grants no right in the songs. Performance royalties for the songs are licensed and paid through the performing rights organizations.\n10.2 In the United States, Digital Services that hold the blanket license pay the mechanical royalties for interactive streams and for downloads to The MLC. For a download sold by a service that relies on the record company instead, and for any physical format, Licensor secures the mechanical license and pays the royalty in effect, unless the Deal Terms give that task to Distributor.\n10.3 Elsewhere, mechanical rights are licensed through the local societies.\n#A 11. SOUNDEXCHANGE AND PERFORMANCE INCOME ON THE MASTERS\n11.1 For United States digital performance royalties collected by SoundExchange, the party named in the Deal Terms registers as rights owner of the Masters and collects the rights owner share. If Distributor collects it, it counts as Net Receipts.\n11.2 The featured artist share is paid by SoundExchange to the featured artists. It is not Net Receipts, and neither party may claim it.\n11.3 Outside the United States, income collected for the owner of the Masters by collecting societies is handled as in Section 11.1.\n#A 12. WARRANTIES AND INDEMNITY\n12.1 Licensor warrants that it owns the Masters, that each contributor listed in Schedule B has signed the agreement listed there, that the Masters contain no uncleared sample, and that it has granted the same rights to no one else.\n12.2 Distributor warrants that it has the right to sign this Agreement and that it will exploit the Masters only as this Agreement allows.\n12.3 Each party will indemnify the other against third-party claims arising from a breach of its warranties, once the claim is reduced to a final judgment or settled with the indemnifying party's written consent. Distributor may hold back only a sum reasonably related to a claim filed in court, and releases it if the claim is not pursued within twelve months.\n#A 13. ARTIFICIAL INTELLIGENCE\n13.1 Distributor will not use the Masters, or allow them to be used, to train an artificial intelligence system or to create a digital replica of Artist's voice or likeness.\n13.2 Any license of the Masters to a generative AI service needs Licensor's separate written consent, service by service.\n#A 14. TERMINATION AND REVERSION\n14.1 A party is in breach only after it has received written notice and has failed to cure within thirty days. This cure period does not postpone any payment date.\n14.2 If a breach is not cured, the other party may terminate this Agreement by written notice. Licensor may also terminate for a Master that is not released within ninety days after its target release date, or if Distributor becomes insolvent or stops doing business.\n14.3 On termination, the license ends and Sections 5.2 and 5.3 apply. All rights in the Masters are Licensor's alone. An unrecouped advance is repayable only if this Agreement ends because of Licensor's uncured breach.\n#A 15. CONFIDENTIALITY, ASSIGNMENT AND PERSONAL DATA\n15.1 Each party keeps the financial terms of this Agreement confidential, except toward its advisers, its auditors and the people it must pay.\n15.2 Distributor may assign this Agreement only to an affiliate or to the buyer of its distribution business, with notice to Licensor. Licensor may assign it to a company that Artist controls.\n15.3 Each party processes the other's personal data only to perform this Agreement and to account for income. No identity document and no bank detail appears in this Agreement.\n#A 16. GOVERNING LAW, SIGNATURE AND ENTIRE AGREEMENT\n16.1 This Agreement is governed by the law stated in the Deal Terms. The courts stated in the Deal Terms have exclusive jurisdiction. Notices are sent by email to the addresses each party has confirmed in writing.\n16.2 The parties and Artist sign this Agreement electronically. The audit trail is part of this Agreement. An exclusive license must be in a signed writing: this Agreement is that writing.\n16.3 This Agreement and its Schedules are the entire agreement of the parties about the Masters. It may be changed only in a writing signed by both parties.\n16.4 This is a demonstration document. It has no legal effect.\n---\n#SIGS\nLicensor | [[company_name]] | By: [[company_signatory]], [[company_signatory_title]] | Company\nDistributor | [[distributor_name]] | By: [[distributor_signatory]], [[distributor_signatory_title]] | Distributor\nArtist, for Section 3 only | [[artist_legal_name]] | | Artist\n#END\n#H SCHEDULE A: REPERTOIRE\n#W 20,14,12,20,20,14\n|| Master | Version | Duration | ISRC | Song and ISWC | Target release\n| [[rep_title]] | [[rep_version]] | [[rep_duration]] | [[rep_isrc]] | [[rep_song]] | [[rep_release]]\nEach line ties a master to its song, so that the two copyrights travel together.\n#H SCHEDULE B: MASTER SPLITS AND CHAIN OF TITLE\n#K Master splits: shares of the income Licensor receives for the Masters.\n#W 34,26,14,26\n|| Beneficiary | Role | Share | Agreement\n| [[company_name]] | Owner of the Masters | [[ms_owner_share]]% | Assignment of master recordings\n| [[producer_name]] | Producer | [[ms_producer_share]]% | Producer agreement\n| [[ms_featured_name]] | Featured artist | [[ms_featured_share]] | Featured artist agreement\n#K Chain of title: documents delivered with the Masters.\n#W 30,30,16,24\n|| Document | Signers | Date | Identity verified\n| Assignment of master recordings | [[artist_legal_name]], [[company_name]] | [[ct_assignment_date]] | [[ct_assignment_identity]]\n| Producer agreement | [[company_name]], [[producer_name]] | [[ct_producer_date]] | [[ct_producer_identity]]\n| Split sheet | [[ct_split_signers]] | [[ct_split_date]] | [[ct_split_identity]]\n| Featured artist agreement and label waiver | [[ct_featured_signers]] | [[ct_featured_date]] | [[ct_featured_identity]]\n#H SCHEDULE C: LABEL SERVICES\nThis Schedule applies only if the Deal Terms say so.\n#W 22,38,20,20\n|| Service | What Distributor does | Budget or fee | Licensor approval\n| [[svc1_name]] | [[svc1_scope]] | [[svc1_budget]] | [[svc1_approval]]\n| [[svc2_name]] | [[svc2_scope]] | [[svc2_budget]] | [[svc2_approval]]\n| [[svc3_name]] | [[svc3_scope]] | [[svc3_budget]] | [[svc3_approval]]\nDistributor reports on these services with each statement. A cost is charged to Licensor only if this Schedule states it and Licensor approved it in writing before it was spent.","02":"#PROFILE US\n#T ASSIGNMENT OF MASTER RECORDINGS\n#S [[artist_legal_name]] to [[company_name]]\n#E Effective as of [[effective_date]]\n#H DEAL TERMS\n#W 32,68\n|| Term | Agreed value\n| Artist | [[artist_legal_name]], professionally known as [[artist_stage_name]], [[artist_residence]] (\"Artist\")\n| Company | [[company_name]], [[company_description]] (\"Company\")\n| Artist's interest in Company | [[artist_company_interest]]\n| Masters | The sound recordings listed in Schedule A (the \"Masters\")\n| Consideration | [[assignment_consideration]]\n| Artist's share of income | [[artist_income_terms]]\n| Reversion | [[reversion_trigger]]\n| Governing law and forum | [[governing_law_forum]]\n| Signature | [[signature_level]]\n| Version | Version [[version]] dated [[effective_date]]\n#H STANDARD TERMS\n---\n#A 1. ASSIGNMENT\n1.1 Artist hereby assigns to Company all right, title and interest in the Masters, including Artist's performances as recorded on them, throughout the world, for the full term of copyright and any extension.\n1.2 The assignment includes the right to register the copyright in the Masters in Company's name and to act against infringers.\n1.3 This is an assignment. The parties do not treat the Masters as works made for hire.\n#A 2. WHAT ARTIST KEEPS\n2.1 Artist keeps the songs. Artist's share of each song is stated in the split sheet signed by all writers.\n2.2 Artist keeps the featured artist share of United States digital performance royalties, which SoundExchange pays to Artist.\n2.3 Artist keeps Artist's name, likeness and voice, subject only to Section 5, and remains free to perform the songs live.\n#A 3. COMPANY'S RIGHTS\n3.1 Company may exploit the Masters and may license them, exclusively or not, to a distributor or a label.\n3.2 Where a distributor asks for it, Artist will join that license to confirm this assignment and to allow the use of Artist's approved name and likeness for the Masters. Artist gives no personal guarantee and is not bound by a license Artist has not signed.\n#A 4. WARRANTIES AND CHAIN OF TITLE\n4.1 Artist warrants that Artist performed on the Masters, has assigned or licensed them to no one else, and is free to sign this assignment.\n4.2 The other contributors to the Masters, and the agreements they signed with Company, are listed in Schedule B. Company keeps those agreements with this assignment.\n#A 5. NAME, LIKENESS AND ARTIFICIAL INTELLIGENCE\n5.1 Company and its licensees may use Artist's approved name, approved photographs and approved biography to exploit and promote the Masters.\n5.2 This covers no endorsement, no merchandise and no digital replica of Artist's voice or likeness. Neither party will use the Masters to train an artificial intelligence system without the other's separate written consent.\n#A 6. TERMINATION RIGHT AND REVERSION\n6.1 Nothing in this assignment waives a termination right that the law does not allow to be waived.\n6.2 If the event stated in the Deal Terms occurs, the Masters return to Artist on Artist's written notice, subject to the licenses then in force, which continue until they end under their own terms.\n#A 7. FURTHER ASSURANCES AND RECORDATION\n7.1 Each party will sign the documents reasonably needed to confirm this assignment. This gives Company no power to sign for Artist.\n7.2 Company may record the short form in Exhibit A with the United States Copyright Office.\n#A 8. GOVERNING LAW, SIGNATURE AND ENTIRE AGREEMENT\n8.1 Governing law and forum are stated in the Deal Terms.\n8.2 Artist and Company sign electronically. The audit trail is part of this assignment. If Artist also signs for Company, both signatures are Artist's.\n8.3 This assignment may be changed only in a writing signed by both parties. This is a demonstration document. It has no legal effect.\n---\n#SIGS\nArtist | [[artist_legal_name]] | | Artist\nCompany | [[company_name]] | By: [[company_signatory]], [[company_signatory_title]] | Company\n#END\n#H SCHEDULE A: MASTERS\n#W 20,14,12,20,20,14\n|| Master | Version | Duration | ISRC | Song and ISWC | Target release\n| [[rep_title]] | [[rep_version]] | [[rep_duration]] | [[rep_isrc]] | [[rep_song]] | [[rep_release]]\n#H SCHEDULE B: OTHER CONTRIBUTORS\n#W 34,26,40\n|| Contributor | Role | Agreement\n| [[producer_name]] | Producer | Producer agreement\n| [[ms_featured_name]] | Featured artist | Featured artist agreement\n#H EXHIBIT A: SHORT FORM ASSIGNMENT\nFor good and valuable consideration, [[artist_legal_name]] hereby assigns to [[company_name]] all right, title and interest in the copyright in the sound recordings listed in Schedule A, throughout the world, under the Assignment of Master Recordings dated [[effective_date]].\n#SIGS\nArtist | [[artist_legal_name]] | | ArtistShortForm\n#END","03":"#PROFILE US\n#T PRODUCER AGREEMENT\n#S [[company_name]] and [[producer_name]]\n#E Effective as of [[effective_date]]\n#H SCHEDULE A: DEAL TERMS\n#W 32,68\n|| Term | Agreed value\n| Company | [[company_name]], [[company_description]] (\"Company\")\n| Producer | [[producer_name]], [[producer_status]] (\"Producer\")\n| Mailing addresses | Company: [[company_address]]. Producer: [[producer_address]]\n| Artist | [[artist_stage_name]]\n| Master | \"[[master_title]]\", ISRC [[isrc]]\n| Services | Production of the Master, including the pre-existing instrumental described in Schedule B (the \"Beat\")\n| Delivery date | [[delivery_date]]\n| Fee | US$[[fee]]. [[fee_recoupable]]\n| Payment date | [[payment_date]]\n| Statement of services due | [[services_statement_date]]\n| Producer Royalty | [[producer_royalty]]% of Net Receipts\n| Composition | Producer's share: [[producer_composition_share]]% of the musical work. Performing rights organization: [[producer_pro]]. IPI: [[producer_ipi]]. Publisher: [[producer_publisher]]\n| SoundExchange | [[soundexchange_share]]% of Artist's featured artist share for the Master, by letter of direction\n| Credit | \"[[credit_line]]\"\n| Prior licenses of the Beat | [[prior_licenses]]\n| Re-recording restriction | [[rerecord_term]]\n| Tax form on file | [[producer_tax_form]]\n| Governing law and forum | [[governing_law_forum]]\n| Signature | [[signature_level]]\n| Version | Version [[version]] dated [[effective_date]]\nThe Deal Terms prevail over the Standard Terms. The Schedules are part of this Agreement.\n#H STANDARD TERMS\n---\n#A 1. SERVICES AND DELIVERY\n1.1 Producer will produce the Master with Artist and deliver it to Company by the delivery date.\n1.2 Delivery means the final stereo mix as an untagged WAV file, the instrumental, and all separated tracks, together with complete credits and the information required by Schedule B.\n1.3 Producer will make the reasonable revisions Company requests before release.\n#A 2. FEE\n2.1 Company will pay the Fee on the payment date. If no payment date is stated, the Fee is due within thirty days after delivery.\n2.2 The Fee covers all of Producer's services and costs. If the Deal Terms state that it is recoupable, it is an advance against the Producer Royalty and against nothing else.\n#A 3. ROYALTIES, ACCOUNTING AND AUDIT\n3.1 Company will pay Producer the Producer Royalty on Net Receipts. \"Net Receipts\" means all sums actually received by Company from the exploitation of the Master, in any medium and anywhere in the world, net of taxes and with no other deduction. Where a distributor exploits the Master, Net Receipts are the sums Company receives from that distributor.\n3.2 The Producer Royalty accrues from the first dollar of Net Receipts. If the Fee is recoupable, Company retains the Producer Royalty until the Fee is recouped.\n3.3 Company will send a statement and pay within ninety days after each June 30 and December 31. Each statement shows Net Receipts by source and by territory.\n3.4 Once a year, on thirty days' notice, Producer may have a certified public accountant audit the statements of the last three years. Company will pay any shortfall. It will also pay the cost of the audit if the shortfall reaches five percent.\n#A 4. SOUNDEXCHANGE\n4.1 Company will cause Artist to sign a letter of direction instructing SoundExchange to pay Producer the share stated in the Deal Terms, under 17 U.S.C. § 114(g)(5).\n4.2 If the letter is signed through an electronic signature service, the certificate issued by that service will accompany it.\n4.3 If SoundExchange does not honor the letter, Company will cause Artist to pay Producer the same share out of the United States digital performance royalties Artist receives for the Master.\n4.4 The letter covers Artist's share only. It does not reduce the share of any other featured artist on the Master.\n#A 5. OWNERSHIP\n5.1 The Beat. Producer created the Beat before signing this Agreement. Producer hereby assigns to Company all right, title and interest in the sound recording of the Beat, throughout the world, for the full term of copyright and any extension, subject only to the non-exclusive licenses listed in Schedule B.\n5.2 New services. Producer's contributions to the sound recording of the Master created after signature are specially ordered and commissioned by Company for use as a contribution to a collective work and as part of an audiovisual work. The parties expressly agree that, to the extent the law allows, those contributions shall be considered a work made for hire for Company.\n5.3 Present assignment. To the extent any contribution is not a work made for hire, Producer hereby assigns to Company all right, title and interest in that contribution and in the Master, throughout the world, for the full term of copyright and any extension.\n5.4 Other territories. In any territory that does not recognize works made for hire, Sections 5.1 and 5.3 govern all of Producer's contributions.\n5.5 Moral rights. Producer does not waive moral rights where the law makes them inalienable. Producer agrees not to object to the edits, mixes, masters and versions that are customary in the industry.\n5.6 No joint work. The parties do not intend the Master to be a joint work. Producer keeps no interest in the sound recording. Producer keeps the composition share described in Section 6.\n5.7 Entity. If Producer is an entity, it warrants that it owns the results of the services of the individual who performs them, and that individual signs a separate personal undertaking in favor of Company.\n5.8 Termination rights. Nothing in this Agreement waives a termination right that the law does not allow to be waived.\n#A 6. COMPOSITION AND MECHANICAL LICENSE\n6.1 Producer owns the share of the musical work stated in the Deal Terms and in the split sheet signed by all writers. This Agreement does not transfer it.\n6.2 Producer grants Company, and will cause any publisher of Producer's share to grant, a mechanical license for the composition as recorded on the Master, for the United States, at the statutory rate set under 17 U.S.C. § 115 in effect when each phonorecord is made and distributed, with no reduction and no cap. Elsewhere, mechanical rights are licensed through the local collecting societies.\n#A 7. CREDIT AND METADATA\n7.1 Company will credit Producer as stated in the Deal Terms, in the metadata delivered to digital services and on any packaging.\n7.2 Company will send Producer the credits for review before release. Producer will answer within five business days.\n7.3 An inadvertent failure to credit is not a breach. After notice, Company will correct it promptly for the future.\n#A 8. NAME AND LIKENESS\n8.1 Company and its licensees may use Producer's approved name, approved photographs and approved biography to exploit and promote the Master.\n8.2 This right covers no endorsement, no merchandise and no digital replica of Producer's voice or likeness.\n#A 9. ARTIFICIAL INTELLIGENCE\n9.1 Producer warrants that the contributions are of human authorship. Producer will disclose in writing any generative tool used to create them.\n9.2 Neither party will use the Master, its separated tracks, or the other party's voice or likeness to train an artificial intelligence system or to create a digital replica, without that party's separate written consent.\n#A 10. SAMPLES, PRIOR LICENSES, WARRANTIES AND INDEMNITY\n10.1 Samples. Producer warrants that Producer's contributions contain no sample and no interpolation of a third party's recording or composition, except those listed in Schedule B and cleared in writing. If a sampled recording cannot be cleared, Producer will replay or replace it at Producer's cost.\n10.2 Prior licenses. Schedule B lists every license of the Beat granted before signature. Producer warrants that none of them is exclusive and that none prevents Company from owning and exploiting the Master. Producer will grant no further license of the Beat and will withdraw it from sale on signature.\n10.3 Claims made by prior licensees of the Beat are Producer's responsibility.\n10.4 Each party will indemnify the other against third-party claims arising from a breach of its warranties, once the claim is reduced to a final judgment or settled with the indemnifying party's written consent.\n#A 11. RE-RECORDING\nFor the period stated in the Deal Terms, and to the extent the applicable law allows, Producer will not re-record the Beat, or produce a recording intended to imitate the Master, for anyone else. This restriction covers nothing else.\n#A 12. TAXES\n12.1 Before the first payment, Producer will give Company a completed IRS Form W-9. A Producer who is not a United States person gives the Form W-8 that applies instead.\n12.2 Without that form, Company may withhold the tax that the law requires. This Agreement contains no tax identification number: the form travels through a separate channel.\n#A 13. INDEPENDENT CONTRACTOR\n13.1 Producer is an independent contractor. Nothing in this Agreement creates an employment relationship, a partnership or an agency.\n13.2 If Producer signs as an individual and resides in California or performs any of the services there, or if Company is established in California, Section 5.2 does not apply and Section 5.3 governs all contributions.\n#A 14. PERSONAL DATA\nEach party processes the other's personal data only to perform this Agreement and to account for royalties. No identity document and no bank detail appears in this Agreement.\n#A 15. NOTICES, CURE, GOVERNING LAW AND FORUM\n15.1 Notices are sent by email to the addresses each party has confirmed in writing. They take effect on the next business day.\n15.2 A party is in breach only after it has received written notice and has failed to cure within thirty days. This cure period does not postpone any payment date.\n15.3 This Agreement is governed by the law stated in the Deal Terms. The courts stated in the Deal Terms have exclusive jurisdiction.\n#A 16. SIGNATURE AND ENTIRE AGREEMENT\n16.1 Both parties sign this Agreement electronically, as stated in the Deal Terms, before Producer begins the new services. The audit trail is part of this Agreement.\n16.2 Company will give Producer a signed copy of this Agreement and will keep its own copy for at least six years.\n16.3 This Agreement and its Schedules are the entire agreement of the parties about the Master. It may be changed only in a writing signed by both parties.\n16.4 This is a demonstration document. It has no legal effect.\n---\n#SIGS\nCompany | [[company_name]] | By: [[company_signatory]], [[company_signatory_title]] | Company\nProducer | [[producer_name]] | By: [[producer_signatory]], [[producer_signatory_title]] | Producer\n#END\n#H SCHEDULE B: PRIOR LICENSES AND SAMPLES\n#K Producer lists below every license of the Beat granted before signature. One line per license.\n#W 16,28,18,22,16\n|| Date | Licensee or order number | Type | Limits | Expiry\n| [[pl_date]] | [[pl_licensee]] | [[pl_type]] | [[pl_limits]] | [[pl_expiry]]\nSamples and interpolations contained in the Master: [[samples]].","04":"#PROFILE US\n#T SPLIT SHEET\n#S Songwriting splits for \"[[song_title]]\"\n#E Effective as of [[effective_date]]\n#H THE SONG\n#W 32,68\n|| Item | Value\n| Title | [[song_title]]\n| Alternate titles | [[alt_titles]]\n| Date of creation | [[creation_date]]\n| ISWC | [[iswc]]\n| Linked master | \"[[master_title]]\" by [[artist_stage_name]], ISRC [[isrc]], owned by [[company_name]]\n#H THE WRITERS\n#W 14,10,11,10,15,10,13,17\n|| Legal name | Known as | Role | PRO | IPI | Writer's share | Publisher's share | Publisher\n| [[w1_legal_name]] | [[w1_stage_name]] | [[w1_role]] | [[w1_pro]] | [[w1_ipi]] | [[w1_writer_share]]% | [[w1_publisher_share]]% | [[w1_publisher]]\n| [[w2_legal_name]] | [[w2_stage_name]] | [[w2_role]] | [[w2_pro]] | [[w2_ipi]] | [[w2_writer_share]]% | [[w2_publisher_share]]% | [[w2_publisher]]\n| [[w3_legal_name]] | [[w3_stage_name]] | [[w3_role]] | [[w3_pro]] | [[w3_ipi]] | [[w3_writer_share]]% | [[w3_publisher_share]]% | [[w3_publisher]]\n| Total | | | | | [[total_writer_shares]]% | [[total_publisher_shares]]% |\nEach column is stated out of 100%. A writer with no publisher keeps the publisher's share shown on that writer's line. As each organization counts them: [[share_conversion]].\n#H SAMPLES AND INTERPOLATIONS\n#W 26,16,22,18,18\n|| Borrowed work | Type | Rights holders | Clearance | Introduced by\n| [[sm_work]] | [[sm_type]] | [[sm_owners]] | [[sm_status]] | [[sm_introduced_by]]\n---\n#H DECLARATIONS\n1. This document covers the song only: its words and its music. It does not deal with the master or with the income of the master.\n2. The writers listed above are the only writers of the song. The splits reflect every contribution. They apply in place of the rule that co-writers who have agreed nothing own a song in equal shares.\n3. Each writer administers and licenses only that writer's own share, directly or through the publisher named on that writer's line. No writer grants a license for the whole song without the written consent of the others.\n4. Each writer will register these splits, and no others, with that writer's performing rights organization and, for the United States, with The MLC, directly or through a publisher or an administrator, within [[registration_days]] days after signature. No writer will file a conflicting claim.\n5. Declared samples and interpolations are listed above. Between the writers, an undeclared sample or interpolation is borne by the writer who introduced it: its cost, and any share given up to clear it, come out of that writer's split.\n6. Generative AI tools used to write the song: [[ai_tools]]. Each writer confirms that the writer's own contribution is of human authorship.\n7. These splits change only by a new split sheet signed by every writer.\n8. Writers who do not use LYRA are informed that [[data_controller]] processes their name, role, PRO and IPI number to prepare and keep this document, and that they may ask for access, correction or deletion at [[data_contact]]. This document contains no Social Security number, no tax number, no date of birth and no mailing address.\n9. Each writer signs electronically, and each signed copy counts as an original. Governing law and forum: [[governing_law_forum]]. Signature: [[signature_level]]. Version [[version]] dated [[effective_date]]. This is a demonstration document. It has no legal effect.\n#H SIGNATURES\n#W 26,18,30,26\n|| Writer | Date | Identity verified | Signature\n| [[w1_legal_name]] | [[w1_signature_date]] | [[w1_identity_check]] | [[w1_signature]]\n| [[w2_legal_name]] | [[w2_signature_date]] | [[w2_identity_check]] | [[w2_signature]]\n| [[w3_legal_name]] | [[w3_signature_date]] | [[w3_identity_check]] | [[w3_signature]]","05":"#PROFILE US\n#T FEATURED ARTIST AGREEMENT\n#S [[company_name]] and [[featured_legal_name]]\n#E Effective as of [[effective_date]]\n#H SCHEDULE A: DEAL TERMS\n#W 32,68\n|| Term | Agreed value\n| Company | [[company_name]], [[company_description]] (\"Company\")\n| Featured Artist | [[featured_legal_name]], professionally known as [[featured_stage_name]], [[featured_status]] (\"Featured Artist\")\n| Mailing addresses | Company: [[company_address]]. Featured Artist: [[featured_address]]\n| Main artist | [[artist_stage_name]]\n| Master | \"[[master_title]]\", ISRC [[isrc]]\n| Performance | [[featured_role]]. Session: [[session_date]], [[session_place]]\n| Session fee | US$[[featured_fee]]. [[featured_fee_recoupable]]\n| Payment date | [[featured_payment_date]]\n| Statement of services due | [[featured_statement_date]]\n| Royalty | [[featured_royalty]]% of Net Receipts\n| SoundExchange | [[featured_soundexchange_share]]% of the featured artist share for the Master\n| Song | [[featured_composition]]\n| Credit | \"[[featured_credit]]\". Label credit: [[courtesy_credit]]\n| Video | [[video_terms]]\n| Single | [[single_release]]\n| Label status | [[featured_label_status]]\n| Label waiver | [[waiver_reference]]\n| Re-recording restriction | [[featured_rerecord_term]]\n| Tax form on file | [[featured_tax_form]]\n| Governing law and forum | [[governing_law_forum]]\n| Signature | [[signature_level]]\n| Version | Version [[version]] dated [[effective_date]]\nThe Deal Terms prevail over the Standard Terms. The Label Waiver is part of this Agreement.\n#H STANDARD TERMS\n---\n#A 1. ENGAGEMENT AND LABEL WAIVER\n1.1 Featured Artist will perform on the Master with the main artist, as described in the Deal Terms. This Agreement covers the Master and its edited versions. It covers nothing else.\n1.2 This Agreement is not exclusive. Featured Artist remains free to record and to perform for anyone.\n1.3 If the Deal Terms state that Featured Artist is under an exclusive recording agreement, the Label Waiver is signed first, and this Agreement takes effect only once Featured Artist's label has signed it. Its date appears in the Deal Terms.\n#A 2. SESSION FEE\n2.1 Company will pay the session fee on the payment date. If no payment date is stated, the fee is due within thirty days after the session.\n2.2 The session fee covers the session and the delivery of the performance. If the Deal Terms state that it is recoupable, it is an advance against the royalty of Section 3 and against nothing else.\n#A 3. ROYALTY, ACCOUNTING AND AUDIT\n3.1 Company will pay Featured Artist the royalty stated in the Deal Terms on Net Receipts. \"Net Receipts\" means all sums actually received by Company from the exploitation of the Master, in any medium and anywhere in the world, net of taxes and with no other deduction. Where a distributor exploits the Master, Net Receipts are the sums Company receives from that distributor.\n3.2 The royalty accrues from the first dollar of Net Receipts. If the session fee is recoupable, Company retains the royalty until the fee is recouped.\n3.3 Company will send a statement and pay within ninety days after each June 30 and December 31. Each statement shows Net Receipts by source and by territory.\n3.4 Once a year, on thirty days' notice, Featured Artist may have a certified public accountant audit the statements of the last three years. Company will pay any shortfall. It will also pay the cost of the audit if the shortfall reaches five percent.\n#A 4. SOUNDEXCHANGE\n4.1 The main artist and Featured Artist are both featured artists on the Master. They share the featured artist share of United States digital performance royalties as stated in the Deal Terms.\n4.2 Featured Artist will register with SoundExchange and give it that allocation. Company will cause the main artist to do the same. Until SoundExchange has received the allocation from both of them, it applies its own default allocation.\n4.3 A letter of direction signed by the main artist in favor of a producer comes out of the main artist's share only.\n#A 5. OWNERSHIP\n5.1 Featured Artist's performance is specially ordered and commissioned by Company for use as a contribution to a collective work and as part of an audiovisual work. The parties expressly agree that, to the extent the law allows, it shall be considered a work made for hire for Company.\n5.2 To the extent the performance is not a work made for hire, Featured Artist hereby assigns to Company all right, title and interest in the performance and in the Master, throughout the world, for the full term of copyright and any extension.\n5.3 If Featured Artist signs as an individual and resides in California or performs there, or if Company is established in California, Section 5.1 does not apply and Section 5.2 governs.\n5.4 The parties do not intend the Master to be a joint work. Featured Artist keeps no interest in the sound recording.\n5.5 If Featured Artist is an entity, it warrants that it owns the results of the services of the individual who performs them, and that individual signs a separate personal undertaking in favor of Company.\n5.6 Nothing in this Agreement waives a termination right that the law does not allow to be waived.\n#A 6. SONG\n6.1 If Featured Artist wrote part of the song, that share is stated in the split sheet signed by all writers. This Agreement does not transfer it.\n6.2 Featured Artist grants Company, and will cause any publisher of that share to grant, a mechanical license for the song as recorded on the Master, for the United States, at the statutory rate set under 17 U.S.C. § 115 in effect when each phonorecord is made and distributed, with no reduction and no cap.\n#A 7. CREDIT AND METADATA\n7.1 Company will credit Featured Artist as stated in the Deal Terms, in the metadata delivered to digital services and on any packaging. Where the Deal Terms state a label credit, Company will carry it in the same places.\n7.2 Company will send Featured Artist the credits for review before release. Featured Artist will answer within five business days.\n7.3 An inadvertent failure to credit is not a breach. After notice, Company will correct it promptly for the future.\n#A 8. NAME, LIKENESS AND PROMOTION\n8.1 Company and its licensees may use Featured Artist's approved name, approved photographs and approved biography to exploit and promote the Master. This is Featured Artist's written consent to those uses, and to no other.\n8.2 This right covers no endorsement, no merchandise and no use for another recording.\n8.3 Video and single release are as stated in the Deal Terms. Featured Artist will take part in reasonable promotion of the Master, on reasonable notice and subject to prior commitments. Company pays the approved costs.\n#A 9. VOICE AND ARTIFICIAL INTELLIGENCE\n9.1 Nothing in this Agreement allows a digital replica of Featured Artist's voice or likeness. A replica needs a separate writing, signed by Featured Artist, that describes each intended use.\n9.2 Neither party will use the Master, its separated tracks, or the other party's voice or likeness to train an artificial intelligence system, without that party's separate written consent.\n9.3 Featured Artist warrants that the performance is Featured Artist's own and is not generated.\n#A 10. FEATURED ARTIST'S FREEDOM\n10.1 Featured Artist may perform the song live and may refer to the Master in Featured Artist's own biography and channels.\n10.2 For the period stated in the Deal Terms, and to the extent the applicable law allows, Featured Artist will not record the same song for anyone else. This restriction covers nothing else.\n#A 11. WARRANTIES AND INDEMNITY\n11.1 Featured Artist warrants that the label status stated in the Deal Terms is accurate, that Featured Artist is free to sign this Agreement once any Label Waiver is signed, and that the performance contains no sample of a third party's recording.\n11.2 Company warrants that it owns or controls the Master, and that it will pay the session fee and the royalty as agreed.\n11.3 Each party will indemnify the other against third-party claims arising from a breach of its warranties, once the claim is reduced to a final judgment or settled with the indemnifying party's written consent.\n#A 12. INDEPENDENT CONTRACTOR AND TAXES\n12.1 Featured Artist is an independent contractor. Nothing in this Agreement creates an employment relationship, a partnership or an agency. Company is not a signatory to a union agreement.\n12.2 Before the first payment, Featured Artist will give Company a completed IRS Form W-9. A Featured Artist who is not a United States person gives the Form W-8 that applies instead. Without that form, Company may withhold the tax that the law requires. This Agreement contains no tax identification number.\n#A 13. PERSONAL DATA, NOTICES AND CURE\n13.1 Each party processes the other's personal data only to perform this Agreement and to account for royalties. No identity document and no bank detail appears in this Agreement.\n13.2 Notices are sent by email to the addresses each party has confirmed in writing. They take effect on the next business day.\n13.3 A party is in breach only after it has received written notice and has failed to cure within thirty days. This cure period does not postpone any payment date.\n#A 14. GOVERNING LAW, SIGNATURE AND ENTIRE AGREEMENT\n14.1 This Agreement is governed by the law stated in the Deal Terms. The courts stated in the Deal Terms have exclusive jurisdiction.\n14.2 Both parties sign this Agreement electronically, before the session. The audit trail is part of this Agreement. Company will give Featured Artist a signed copy and will keep its own copy for at least six years.\n14.3 This Agreement and the Label Waiver are the entire agreement of the parties about the Master. It may be changed only in a writing signed by both parties.\n14.4 This is a demonstration document. It has no legal effect.\n---\n#SIGS\nCompany | [[company_name]] | By: [[company_signatory]], [[company_signatory_title]] | Company\nFeatured Artist | [[featured_legal_name]] | By: [[featured_signatory]], [[featured_signatory_title]] | FeaturedArtist\n#END","05bis":"#PROFILE US\n#T LABEL WAIVER\n#S [[featured_label_name]] to [[company_name]]\n#E Effective as of [[effective_date]]\n**[[featured_label_name]]**, [[featured_label_description]] (\"Label\"), gives this waiver to **[[company_name]]** (\"Company\"), for the performance of **[[featured_legal_name]]**, professionally known as [[featured_stage_name]] (\"Featured Artist\"), who acknowledges it[[label_licensee_mention]].\n#A 1. WAIVER\n1.1 Label holds exclusive recording rights in Featured Artist's performances. Label waives that exclusivity so that Featured Artist may perform on the master \"[[master_title]]\" with the main artist [[artist_stage_name]], for Company. The waiver covers that master and its edited versions. Video: [[waiver_video]].\n1.2 This waiver is signed before Featured Artist and Company sign their own agreement.\n#A 2. NO RIGHTS IN THE MASTER\nLabel acquires no right in the master and none in Featured Artist's performance on it. Company engages and pays Featured Artist under a separate agreement. Label's exclusive rights remain in full for everything else.\n#A 3. CONSIDERATION\n[[waiver_override]]\n#A 4. CREDIT AND LIMITS\nFeatured Artist is credited as follows: \"[[featured_credit]]\". Label credit: [[courtesy_credit]]. Release as a single: [[waiver_single]]. Without Label's written consent, Company will not place the master on a compilation unrelated to the main artist's repertoire, will not license it for synchronization, and will not use Featured Artist's name or likeness for anything other than the master.\n#A 5. WARRANTIES, GOVERNING LAW AND SIGNATURE\nLabel warrants that it alone holds the exclusive recording rights in Featured Artist's performances, or that its exclusive licensee signs this waiver. Label and Company will each indemnify the other against third-party claims arising from its own acts. Governing law and forum: [[governing_law_forum]]. Signature: [[signature_level]]. Version [[version]] dated [[effective_date]]. This is a demonstration document. It has no legal effect.\n#SIGS\nLabel | [[featured_label_name]] | By: [[featured_label_signatory]], [[featured_label_signatory_title]] | Label\nCompany | [[company_name]] | By: [[company_signatory]], [[company_signatory_title]] | Company\nFeatured Artist | [[featured_legal_name]] | | FeaturedArtist\nLabel's exclusive licensee | [[label_licensee]] | | LabelLicensee\n#END"},"vals":{"company_name":"Sami Sound LLC","company_description":"a New York limited liability company with its principal office in Brooklyn, New York","company_address":"[postal address on file]","company_signatory":"Lena Morris","company_signatory_title":"Manager","artist_legal_name":"Sam Lewis","artist_stage_name":"Sami","artist_residence":"an individual residing in Brooklyn, New York","master_title":"Left Bank","isrc":"US-TST-27-00001 (test)","song_title":"","iswc":"pending","release_date":"June 2027","producer_name":"Jay Brooks","featured_legal_name":"Oscar Miles","featured_stage_name":"Oz","featured_credit":"Sami feat. Oz","courtesy_credit":"Oz appears courtesy of Brume Records","ms_featured_name":"","rep_title":"","rep_version":"Original version","rep_duration":"3:12","rep_isrc":"","rep_song":"Left Bank, ISWC pending","rep_release":"","effective_date":"[demonstration date]","version":"2","signature_level":"Electronic signature with audit trail, sandbox mode","governing_law_forum":"New York law. State and federal courts in New York County, New York","distributor_name":"Believe","distributor_description":"a French société par actions simplifiée with a share capital of EUR 503,518.72, having its registered office at 24 rue Toulouse-Lautrec, 75017 Paris, France, registered with the Paris Trade and Companies Register under number 481 625 853","distributor_signatory":"Authorized Signatory","distributor_signatory_title":"Business Affairs","territory":"Worldwide","channels":"Digital only","master_delivery_date":"At least 21 days before the target release date","license_term":"5 years","licensor_share":"70","advance_amount":"10,000","advance_schedule":"on signature","services":"Distribution, plus the label services of Schedule C","option":"None","soundexchange_collector":"Licensor registers with SoundExchange as rights owner and collects directly","content_id":"Distributor claims and monetizes on Licensor's behalf","statement_period":"Quarterly","statement_days":"45","payment_days":"30","licensor_tax_form":"IRS Form W-9, received through a separate channel","ms_owner_share":"75","ms_producer_share":"","ms_featured_share":"10%","ct_assignment_date":"[date]","ct_assignment_identity":"Verified, ID and selfie (simulation)","ct_producer_date":"[date]","ct_producer_identity":"Verified, ID and selfie (simulation)","ct_split_signers":"Sam Lewis, Jay Brooks, Ingrid Solvik","ct_split_date":"[date]","ct_split_identity":"Verified, ID and selfie (simulation)","ct_featured_signers":"Not applicable","ct_featured_date":"Not applicable","ct_featured_identity":"Not applicable","svc1_name":"Marketing and promotion","svc1_scope":"Release plan, advertising and press for the Masters","svc1_budget":"US$3,000, paid by Distributor, not recoupable","svc1_approval":"Plan approved before spending","svc2_name":"Playlist and editorial pitching","svc2_scope":"Pitches each Master to the Digital Services before release","svc2_budget":"Included","svc2_approval":"Not needed","svc3_name":"Release management","svc3_scope":"Scheduling, metadata checks and delivery to the Digital Services","svc3_budget":"Included","svc3_approval":"Not needed","artist_company_interest":"Sole member","assignment_consideration":"Artist's membership interest in Company, and Company's undertaking to exploit the Masters","artist_income_terms":"As member of Company. No separate royalty","reversion_trigger":"Artist no longer controls Company","producer_status":"an individual residing in Los Angeles, California","producer_address":"[postal address on file]","delivery_date":"January 30, 2027","fee":"5,000","fee_recoupable":"Recoupable from the Producer Royalty","payment_date":"Within 30 days after delivery","services_statement_date":"On delivery","producer_royalty":"15","producer_composition_share":"","producer_pro":"ASCAP","producer_ipi":"00000000002 (test)","producer_publisher":"None","soundexchange_share":"[to be agreed]","credit_line":"Produced by Jay Brooks","prior_licenses":"One non-exclusive license, listed in Schedule B","rerecord_term":"5 years from first release","producer_signatory":"","producer_signatory_title":"Producer","pl_date":"March 3, 2026","pl_licensee":"Order no. 00123 (test)","pl_type":"Non-exclusive","pl_limits":"100,000 streams","pl_expiry":"March 3, 2031","samples":"none","producer_tax_form":"IRS Form W-9, received through a separate channel","alt_titles":"None","creation_date":"January 12, 2027","w1_legal_name":"","w1_stage_name":"","w1_role":"Words and music","w1_pro":"BMI","w1_ipi":"00000000001 (test)","w1_writer_share":"45","w1_publisher_share":"45","w1_publisher":"Self-published","w1_signature_date":"[date]","w1_identity_check":"Verified, ID and selfie (simulation)","w1_signature":"(vide)","w2_legal_name":"","w2_stage_name":"","w2_role":"Music","w2_pro":"ASCAP","w2_ipi":"00000000002 (test)","w2_writer_share":"30","w2_publisher_share":"30","w2_publisher":"Self-published","w2_signature_date":"[date]","w2_identity_check":"Verified, ID and selfie (simulation)","w2_signature":"(vide)","w3_legal_name":"Ingrid Solvik","w3_stage_name":"Ingrid Solvik","w3_role":"Words","w3_pro":"TONO","w3_ipi":"00000000003 (test)","w3_writer_share":"25","w3_publisher_share":"25","w3_publisher":"Self-published","w3_signature_date":"[date]","w3_identity_check":"Verified, ID and selfie (simulation)","w3_signature":"(vide)","total_writer_shares":"100","total_publisher_shares":"100","share_conversion":"ASCAP counts writers and publishers out of 50% each, so Jay Brooks is registered for 15% as writer and 15% as publisher. BMI counts them out of 100% each, so Sam Lewis is registered for 45% and 45%. The MLC registers the publisher's shares","sm_work":"None declared","sm_type":"Not applicable","sm_owners":"Not applicable","sm_status":"Not applicable","sm_introduced_by":"Not applicable","registration_days":"30","ai_tools":"None","data_controller":"","data_contact":"[contact address]","featured_status":"an individual residing in Atlanta, Georgia","featured_address":"[postal address on file]","featured_role":"Featured vocal performance, one verse","session_date":"February 9, 2027","session_place":"remote session, files delivered by upload","featured_fee":"1,500","featured_fee_recoupable":"Not recoupable","featured_payment_date":"Within 30 days after the session","featured_statement_date":"On the day of the session","featured_royalty":"10","featured_soundexchange_share":"30","featured_composition":"None. Featured Artist did not write the song","video_terms":"One video day, included in the session fee","single_release":"Yes","featured_label_status":"Under an exclusive recording agreement with Brume Records LLC. Label Waiver attached","waiver_reference":"Signed on [demonstration date]","featured_rerecord_term":"3 years from first release","featured_tax_form":"IRS Form W-9, received through a separate channel","featured_signatory":"","featured_signatory_title":"Featured Artist","featured_label_name":"Brume Records LLC","featured_label_description":"a Georgia limited liability company with its principal office in Atlanta, Georgia","featured_label_signatory":"[signatory]","featured_label_signatory_title":"Manager","label_licensee":"(vide)","label_licensee_mention":"(vide)","waiver_video":"allowed","waiver_single":"allowed","waiver_override":"Company will pay Label 3% of the Net Receipts of the master, accounted for and paid with Company's own statements. Label asks for nothing else."},"liens":{"w1_legal_name":"artist_legal_name","w1_stage_name":"artist_stage_name","w2_legal_name":"producer_name","w2_stage_name":"producer_name","producer_signatory":"producer_name","producer_composition_share":"w2_writer_share","ms_producer_share":"producer_royalty","ms_featured_name":"featured_stage_name","featured_signatory":"featured_legal_name","song_title":"master_title","rep_title":"master_title","rep_isrc":"isrc","rep_release":"release_date","data_controller":"company_name"}}</script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+var calm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var FAST=false;
+
+/* ---------- Noms : ce que tape le testeur, sinon l'exemple ---------- */
+var D={prenom:"Sami",societe:"Sami Sound LLC",titre:"Left Bank",representant:"Lena Morris",compositeur:"Jay Brooks",invite:"Oz",prodinvite:"Brume Records",coauteur:"Ingrid Solvik",signataire:""};
+var V={};
+function v(k){var x=V[k];return (x&&String(x).trim())?String(x).trim():D[k];}
+function F(s){
+  if(typeof s==="function") s=s();
+  return String(s).replace(/\{(P|S|T|R|J|I|PI)\}/g,function(_,k){
+    return {P:v("prenom"),S:v("societe"),T:"“"+v("titre")+"”",R:v("representant"),J:v("compositeur"),I:v("invite"),PI:v("prodinvite")}[k];
+  });
+}
+
+/* ---------- Etat du dossier ---------- */
+var S;
+function fresh(){return {open:false,etape:"",structOk:false,ids:{},contrat:{},pieces:{},oeuvre:null,oeuvreEtat:"",master:null,remis:false,log:[],ev:[],files:[],msgs:[],sig:{},sigImg:"",contribs:[v("compositeur"),v("coauteur")],parts:[50,30,20],guest:[70,30],taux:70,sortie:"",livraison:""};}
+function hh(sec){var d=new Date();return sec?d.toTimeString().slice(0,8):d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}).replace(/\s/g," ");}
+function emit(code,obj){S.ev.push({h:hh(true),code:code,obj:obj||""});}
+function log(t){S.log.push({h:hh(false),t:t});}
+function ensureOpen(){if(!S.open){S.open=true;S.etape="Thread open";emit("dossier.ouvert",v("prenom")+", "+v("titre"));log("The thread is open.");}}
+function nomsDossier(){if(S&&S.ev&&S.ev[0]&&S.ev[0].code==="dossier.ouvert")S.ev[0].obj=v("prenom")+", "+v("titre");}
+function etape(x){ensureOpen();S.etape=x;emit("dossier.etape",x);}
+var PEV={"missing":"piece.manquante","proposed":"piece.proposee","to sign":"piece.a_signer","sent":"piece.envoyee","signed":"piece.signee"};
+function piece(n,st){ensureOpen();S.pieces[n]=st;emit(PEV[st],n);if(st==="signed"&&S.files.indexOf(n)<0)S.files.push(n);}
+function ident(n,role,st){ensureOpen();if(S.ids[n]&&S.ids[n].st==="verified")return;S.ids[n]={role:role,st:st,h:st==="verified"?new Date().toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"}):""};emit(st==="verified"?"identite.verifiee":"identite.demandee",n);}
+function version(n,what){S.contrat["Version"]=String(n);emit("contrat.version_"+n,what);}
+var P1="Exclusive License and Services Agreement",P2="Assignment of Master Recordings",P3="Producer Agreement",P4="Split Sheet",P5="Featured Artist Agreement",P5B="Label Waiver";
+
+/* ---------- Reading what the tester types: US formats ---------- */
+function nums(s){return (String(s).match(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g)||[]).map(function(x){return parseFloat(x.replace(/,/g,""));});}
+function names(s){return String(s).split(/\s*(?:,|;|\band\b|&)\s*/i).map(function(x){return x.trim();}).filter(Boolean).slice(0,4);}
+function money(n){var p=String(Math.round(n*100)/100).split(".");p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,",");return p.join(".");}
+var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+var MON3=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+/* "June 12", "June 12, 2027", "Jun 12th", "12 June", "6/12", "6/12/27". Without a year, the demo takes 2027. */
+function readDate(s){
+  s=String(s);var mo,d,y,raw;
+  var m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/i);
+  if(m){mo=MON3.indexOf(m[1].toLowerCase());d=+m[2];y=m[3]?+m[3]:0;raw=m[0];}
+  else{
+    m=s.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?(?:,?\s+(\d{4}))?/i);
+    if(m){mo=MON3.indexOf(m[2].toLowerCase());d=+m[1];y=m[3]?+m[3]:0;raw=m[0];}
+    else{
+      m=s.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?\b/);if(!m)return null;
+      mo=+m[1]-1;d=+m[2];y=m[3]?(+m[3]<100?2000+(+m[3]):+m[3]):0;raw=m[0];
+    }
+  }
+  if(mo<0||mo>11||d<1||d>31)return null;
+  return {date:new Date(y||2027,mo,d),raw:raw};
+}
+function fmtDate(dt,year){return MONTHS[dt.getMonth()]+" "+dt.getDate()+(year?", "+dt.getFullYear():"");}
+function livraison(s){var r=readDate(s);if(!r)return "";var d=new Date(r.date.getTime());d.setDate(d.getDate()-21);return fmtDate(d,false);}
+function list(a){return a.length<2?a.join(""):a.length===2?a[0]+" and "+a[1]:a.slice(0,-1).join(", ")+", and "+a[a.length-1];}
+function isMe(x){return /^(me|myself|me,? myself|i do|i will|i sign|it['’]?s me|that['’]?s me|just me)[ .!]*$/i.test(String(x).trim());}
+function isOk(n){return !!(S.ids[n]&&S.ids[n].st==="verified");}
+/* The master side: the producer's royalty comes from the thread, the featured artist's 10% from the featuring deal. */
+function mShares(){var p=S.points!=null?S.points:15,f=S.pieces[P5]==="signed"?10:0;return {owner:100-p-f,prod:p,feat:f};}
+function masterRows(){var m=mShares(),r=[[v("societe"),m.owner],[v("compositeur"),m.prod]];if(m.feat)r.push([v("invite"),m.feat]);return r;}
+
+/* ---------- Les parcours ----------
+   Une etape : {ly:"texte"} message de LYRA, avec au choix
+     btn:[...] + path:n + off:[...]   boutons de reponse (3 au plus, 20 caracteres)
+     list:{button,rows:[{title,desc}]} + path:n + off:"..."
+     cta:"libelle" + sheet:"kyc"       bouton qui ouvre un lien
+     doc:{name,pages}                  document envoye dans le fil
+     sign:[pieces]                     apres le bouton, la feuille de signature
+     sim:true                          reponse d'un tiers, simulee
+   ou {ask:true, ex:"exemple", save:"cle", check:fn} : texte libre attendu.
+   do:fn s'execute une fois l'etape passee. when:fn la conditionne. */
+var SC={
+entree:{label:"Getting started",n:"0",steps:[
+  {auto:"Hi",do:function(){ensureOpen();}},
+  {ly:"Hi, I'm LYRA. I get the contracts for your next release ready with you."},
+  {ly:"What should I call you?"},
+  {ask:true,ex:"Sami",save:"prenom",what:"your first name or stage name"},
+  {ly:"Thanks, {P}. Which song is this for?"},
+  {ask:true,ex:"Left Bank",save:"titre",what:"the title"},
+  {ly:"Four steps: your company, your identity, your rights, the contract. About ten minutes.",btn:["Start","Later"],path:0,off:[null,"No problem, I'll stay in this thread. For the demo, I'll keep going."],do:function(){etape("Onboarding in progress");log("Onboarding started.");}},
+  {ly:"Do you sign through a company, like an LLC?",btn:["Yes","No"],path:0,off:[null,"Without a company, you sign in your own name. For the demo, I'll keep going with a company."]},
+  {ly:"What's its name?"},
+  {ask:true,ex:"Sami Sound LLC",save:"societe",what:"the company's name"},
+  {ly:"Domestic limited liability company\nCounty: Kings\nStatus: Active",hdr:"{S}",ftr:"Simulated New York Department of State record",btn:["That's it","No"],path:0,off:[null,"I'd run the search again. For the demo, I'll keep this record."],do:function(){S.structOk=true;emit("structure.rattachee",v("societe"));log("Company record confirmed in the New York State database (simulated).");}},
+  {ly:"Who signs for {S}?"},
+  {ask:true,ex:"Lena Morris",save:"representant",what:"the signatory's name, or “me”",do:function(x){if(isMe(x)){V.representant=legal();syncInputs();}}},
+  {ly:function(){return GER()?"Got it. You'll sign twice: as the artist, and for {S}.":"Got it. {R} will sign for the company. You'll sign as the artist.";}},
+  {ly:"Now your identity. An ID, a selfie, two minutes.",btn:["Verify","Later"],path:0,off:[null,"You can do it later, before you sign. For the demo, I'll keep going."],do:function(){ident(v("prenom"),"artist","in progress");}},
+  {ly:"The check opens from this link.",cta:"Open the link",sheet:"kyc",do:function(){ident(v("prenom"),"artist","verified");log(v("prenom")+"'s identity verified, ID and selfie.");}},
+  {ly:"Done. Believe gets the result, the date and the method. Never the ID itself."},
+  {ly:"Your file is open.",do:function(){etape("File open");}}
+]},
+split:{label:"Split sheet",n:"1",steps:[
+  {ly:"Who wrote {T} with you?",do:function(){ensureOpen();}},
+  {ask:true,ex:function(){return v("compositeur")+", "+v("coauteur");},what:"their names, separated by a comma",check:function(x){return names(x).length?null:"I need at least one name.";},do:function(x){S.contribs=names(x);if(S.contribs[1]&&S.contribs[1]!==v("coauteur")){V.coauteur=S.contribs[1];syncInputs();}ensureOpen();}},
+  {ly:"Which PRO are you with?",btn:["BMI","ASCAP","Another one"],path:0,off:[null,"Noted for a real file. For the demo, I'll keep BMI.","The list is open, foreign PROs included. For the demo, I'll keep BMI."]},
+  {ly:function(){return "How do you want to split the song? In order: you, then "+list(S.contribs)+".";}},
+  {ask:true,ex:function(){var k=S.contribs.length+1;return k===3?"50, 30, 20":k===2?"60, 40":k===4?"40, 20, 20, 20":"30, 20, 20, 15, 15";},what:"the splits, in order",check:function(x){var n=nums(x),k=S.contribs.length+1;if(n.length!==k)return "I need "+k+" splits, in order: you, then "+list(S.contribs)+".";var t=n.reduce(function(a,b){return a+b;},0);if(Math.abs(t-100)>0.001)return "That adds up to "+t+". It has to be 100. What do you propose?";return null;},do:function(x){S.parts=nums(x);S.oeuvre=[v("prenom")].concat(S.contribs);S.oeuvreEtat="proposed";emit("split.oeuvre","Proposed: "+S.parts.join(", "));}},
+  {ly:"Can I message them on your behalf?",btn:["Go ahead","No","Why sign this?"],path:0,off:[null,"Without your OK, I don't message anyone. For the demo, I'll keep going with your OK."],
+   info:{i:2,text:"With nothing signed, co-writers own a song in equal shares by default, whatever each one wrote.\n\nA signed split sheet replaces that default with the numbers you all agreed on. It's also what each of you registers with your PRO and with The MLC."},
+   do:function(){S.contribs.forEach(function(c){ident(c,"songwriter","in progress");});S.oeuvreEtat="invitations sent";log(v("prenom")+"'s go-ahead recorded. "+list(S.contribs)+" invited.");}},
+  {ly:function(){var c=S.contribs,p=S.parts,last=c.length-1;var ask=p[last+1]+5;var head=c.length>1?c.slice(0,-1).map(function(n,i){return n+" accepts "+p[i+1]+"%.";}).join(" ")+" ":"";return head+c[last]+" disputes it and asks for "+ask+"%.";},sim:true},
+  {ly:function(){var p=S.parts.slice(),last=p.length-1;p[0]-=5;p[last]+=5;S.next=p;return S.contribs[S.contribs.length-1]+" asks for "+p[last]+". I suggest "+p.join(", ")+". The total stays at 100.";},btn:["Propose that","Decline"],path:0,off:[null,"Declining would reopen the discussion. For the demo, I'll propose this split."],do:function(){S.parts=S.next;S.oeuvreEtat="agreed";emit("split.oeuvre","Agreed: "+S.parts.join(", "));log("Song splits adjusted: "+S.parts.join(", ")+".");}},
+  {ly:"Everyone accepted, and gave me their PRO and IPI number.",sim:true},
+  {ly:"Any samples or AI tools on this song?",btn:["Yes","No"],path:1,off:["I'd list them on the split sheet. For the demo, I'll keep going without any.",null]},
+  {ly:"The split sheet for {T}. For each writer: PRO, IPI, writer's share and publisher's share. No one has a publisher, so the two columns match.",doc:{name:"Split sheet",pages:2,ko:135},do:function(){piece(P4,"to sign");}},
+  {when:function(){return !isOk(v("prenom"));},ly:"Before you sign, your identity. An ID, a selfie, two minutes.",cta:"Open the link",sheet:"kyc",do:function(){ident(v("prenom"),"artist","verified");log(v("prenom")+"'s identity verified, ID and selfie.");}},
+  {ly:"Your signature.",btn:["Read and sign"],path:0,sign:[P4]},
+  {ly:function(){var c=S.contribs;return list(c)+(c.length>1?" signed, each with a verified identity.":" signed, with a verified identity.")+(c.length>1?" It's 3:07 AM in Los Angeles, 12:07 PM in Oslo.":" It's 3:07 AM in Los Angeles.");},sim:true,do:function(){S.contribs.forEach(function(c,i){ident(c,"songwriter","verified");if(i<2)sig("04","w"+(i+2),i===0&&c===v("compositeur")?"compositeur":"coauteur",c,i===0?{kyc:true,time:"3:07 AM PT",place:"Los Angeles, CA"}:{kyc:true,time:"12:07 PM CET",place:"Oslo, Norway"});});piece(P4,"signed");S.oeuvreEtat="signed by "+(S.contribs.length+1);emit("split.oeuvre","Signed by "+(S.contribs.length+1));log("Song splits signed by "+list([v("prenom")].concat(S.contribs))+".");}},
+  {ly:"The split sheet, signed by everyone.",doc:{name:"Split sheet, signed",pages:2,ko:139,id:"04",signed:true}},
+  {ly:"Next, each of you registers these same splits with your PRO and with The MLC, within 30 days. The sheet shows how ASCAP and BMI each count them.",do:function(){etape("Split signed");}}
+]},
+recording:{label:"Recording",n:"2",steps:[
+  {ly:"Who owns the master of {T}?",btn:["My company","A label","I do"],path:0,off:[null,"That branch isn't written yet. For the demo, I'll keep going with your company.","That branch isn't written yet. For the demo, I'll keep going with your company."],do:function(){ensureOpen();}},
+  {ly:"Is there a signed paper where you assign your masters to {S}?",btn:["Yes","No","Why it matters"],path:1,off:["Then I'd ask you to send it over. For the demo, I'll keep going without one.",null],
+   info:{i:2,text:"A transfer of copyright only holds in writing, signed by the owner. A distributor wants to see the paper that moves the masters from you to {S}.\n\nIt's an assignment, not a work made for hire. It doesn't waive the right the law gives you to end the transfer after 35 years."},
+   do:function(){piece(P2,"missing");log("Missing document: nothing in writing moves the masters from the artist to the company.");}},
+  {ly:"Without it, {S} can't show Believe that it owns the master. I'll draft it: a short assignment, from you to your company."},
+  {ly:"Who runs {S}?",btn:["I do, alone","I do, with others","A manager"],path:2,pick:function(i){if(i===0){V.representant=legal();syncInputs();}},off:["On your own, you sign twice: as the artist, and for {S}. One signature covers both.","With others, the assignment stays the same and I flag the file. I'll keep going.",null]},
+  {ly:"Did a producer work on the master?",btn:["Yes","No"],path:0,off:[null,"With no producer, the assignment is enough. For the demo, I'll keep going with a producer."]},
+  {ly:"Their name?"},
+  {ask:true,ex:"Jay Brooks",save:"compositeur",what:"the producer's name"},
+  {ly:"Where is {J} based?",btn:["California","New York","Somewhere else"],path:0,off:[null,"In New York, the work-made-for-hire clause stays in. For the demo, I'll keep going with California.","Elsewhere, the agreement leans on its assignment clause. For the demo, I'll keep going with California."]},
+  {ly:"In California, I switch off the work-made-for-hire clause. {J} assigns the beat and the production to {S} instead."},
+  {ly:"Does {J} sign as an individual or through a company?",btn:["As an individual","A company"],path:0,off:[null,"Through a company, I add its record and a personal undertaking. For the demo, I'll keep going with an individual."]},
+  {ly:"Did you first get the beat from {J} under a lease, a non-exclusive license?",btn:["Yes","No","Not sure"],path:0,off:[null,"With no earlier license, Schedule B stays empty. For the demo, I'll keep going with a lease.","I'd ask {J} in the agreement. For the demo, I'll keep going with a lease."]},
+  {ly:"Send me that license. I'll read it before I draft anything."},
+  {send:{name:"Beat license",pages:4,ko:212}},
+  {ly:"I read it. One clause will cost you.\n\nSection 6: the producer keeps the master of your song. You can't register it, and you can't license it to a distributor.\n\nSection 3 also caps you at 100,000 streams. Past the cap, every stream infringes.",hdr:"Red alert: you don't own your master",ftr:"Simulated reading. Clause catalog: E9, E22",btn:["Fix it","Keep the lease"],path:0,off:[null,"Keep it as is, and Believe can't take the master. For the demo, I'll fix it."],do:function(){log("Beat license read. Red alert: the producer keeps the master. Alert: a cap at 100,000 streams.");}},
+  {ly:"A fair deal says the opposite: {S} owns the finished master, and {J} gets a fee, a royalty and a credit. That's a Producer Agreement. I'm drafting it."},
+  {ly:"What fee and royalty did you agree on with {J}?"},
+  {ask:true,ex:"$5,000, 15%",what:"the fee, then the royalty",check:function(x){var n=nums(x);if(n.length<2)return "I need two numbers: the fee, then the royalty. For example: $5,000, 15%.";if(n[1]>50)return "A royalty of "+n[1]+"% looks off. The fee comes first, then the royalty. For example: $5,000, 15%.";return null;},do:function(x){var n=nums(x);S.fee=n[0];S.points=n[1];}},
+  {ly:function(){return "Got it: $"+money(S.fee)+", recoupable from the royalty, and "+S.points+"% of net receipts. Credit: Produced by {J}. The song share for {J} stays as on the split sheet.";}},
+  {ly:function(){return "SoundExchange pays your artist royalties straight to you. Should {J} get "+S.points+"% of them too, by letter of direction?";},btn:["Yes","No"],path:0,off:[null,"Without a letter, SoundExchange pays {J} nothing. For the demo, I'll keep going with the letter."]},
+  {ly:"Your lease goes in Schedule B as a prior license. {J} takes the beat off the market on signature."},
+  {ly:"Sent to {J}.",doc:{name:"Producer Agreement",pages:6,ko:154},do:function(){piece(P3,"sent");ident(v("compositeur"),"producer","in progress");}},
+  {ly:"Your assignment to {S}.",doc:{name:"Assignment of Master Recordings",pages:3,ko:131},do:function(){piece(P2,"to sign");}},
+  {ly:"It's ready.",btn:["Read and sign"],path:0,sign:[P2],do:function(){if(GER()){sigRep("02","Company");piece(P2,"signed");log("Assignment signed by "+v("prenom")+", as the artist and for "+v("societe")+".");}}},
+  {when:function(){return !GER();},ly:"{R} signed for {S}.",sim:true,do:function(){sigRep("02","Company");piece(P2,"signed");log("Assignment signed by "+v("prenom")+" and by "+v("representant")+".");}},
+  {ly:function(){return GER()?"Your copy. You signed it twice: as the artist, and for {S}.":"Your copy. Signed by you, and by {R} for {S}.";},doc:{name:"Assignment of Master Recordings, signed",pages:3,ko:136,id:"02",signed:true}},
+  {ly:"{J} signed, with a verified identity. It's 6:12 AM in Los Angeles.",sim:true,do:function(){var j=v("compositeur");ident(j,"producer","verified");if(S.ids[j]&&S.ids[j].role==="songwriter")S.ids[j].role="songwriter, producer";sigRep("03","Company");sig("03","Producer","compositeur",j,{time:"6:12 AM PT",place:"Los Angeles, CA",kyc:true,label:j+", Los Angeles"});piece(P3,"signed");log("Producer Agreement signed by "+j+".");}},
+  {ly:"The copy signed by {J}, in Los Angeles.",doc:{name:"Producer Agreement, signed",pages:6,ko:160,id:"03",signed:true}},
+  {ly:function(){var m=mShares();return "Master splits: {S} "+m.owner+"%, {J} "+m.prod+"%"+(m.feat?", {I} "+m.feat+"%":"")+", as in the Producer Agreement.";},btn:["Confirm","Edit"],path:0,off:[null,"An edit would reopen the agreement. For the demo, I'll confirm."],do:function(){S.master=masterRows();emit("split.master",S.master.map(function(x){return x[1];}).join(", "));log("Master splits confirmed.");}},
+  {ly:"Two documents added to the chain of title for {T}.",do:function(){etape("Chain of title complete");}}
+]},
+featuring:{label:"Featuring",n:"3",steps:[
+  {ly:"Is there a feature on {T}?",btn:["Yes","No"],path:0,off:[null,"With no feature, this journey stops here. For the demo, I'll keep going with a featured artist."],do:function(){ensureOpen();}},
+  {ly:"Their stage name?"},
+  {ask:true,ex:"Oz",save:"invite",what:"the featured artist's stage name",do:function(){log("Featured artist declared: "+v("invite")+".");}},
+  {ly:"Is {I} signed to a label, under an exclusive recording agreement?",btn:["Yes","No","Not sure"],path:0,off:[null,"Unsigned, the featured artist agreement is enough. For the demo, I'll keep going with a label.","I'd ask {I}. For the demo, I'll keep going with a label."],do:function(){piece(P5B,"missing");log("Exclusive deal declared: a label waiver is needed.");}},
+  {ly:"Then the label has to sign off first. Which label?"},
+  {ask:true,ex:"Brume Records",save:"prodinvite",what:"the name of the featured artist's label"},
+  {ly:"Does {PI} have an exclusive licensee?",btn:["Yes","No"],path:1,off:["With an exclusive licensee, it signs too. For the demo, I'll keep going without one.",null]},
+  {ly:"Is the waiver free, or does {PI} take a percentage?",btn:["Free","A percentage"],path:1,off:["Free, the waiver says so. For the demo, I'll keep going with a percentage.",null]},
+  {ly:"What percentage?"},
+  {ask:true,ex:"3%",what:"a percentage",check:function(x){return nums(x).length?null:"I need a percentage. For example: 3%.";},do:function(x){S.contre=String(x).trim();}},
+  {ly:"{I}'s session: when, and where?"},
+  {ask:true,ex:"February 9, 2027, remote",what:"the date and place of the session",do:function(x){var r=readDate(x),pl=r?String(x).replace(r.raw,"").replace(/^[\s,]+|[\s,.]+$/g,""):"";S.session={date:r?fmtDate(r.date,true):"",place:pl&&!/^remote/i.test(pl)?pl:""};}},
+  {ly:"Here's the deal with {I}.\n\nSession fee: $1,500, not recoupable\nRoyalty: 10% of net receipts\nCredit: {P} feat. {I}",btn:["Confirm","Edit"],path:0,off:[null,"An edit would go back to {I}. For the demo, I'll confirm."]},
+  {ly:"SoundExchange splits the artist share 50/50 between a main artist and a feature, unless you both tell it otherwise. How do you want to split it? You, then {I}."},
+  {ask:true,ex:"70, 30",what:"two shares, yours then theirs",check:function(x){var n=nums(x);if(n.length!==2)return "I need two shares: yours, then "+v("invite")+"'s. For example: 70, 30.";var t=n[0]+n[1];if(Math.abs(t-100)>0.001)return "That adds up to "+t+". It has to be 100. What do you propose?";return null;},do:function(x){S.guest=nums(x);}},
+  {ly:function(){return S.guest[0]+"% for you, "+S.guest[1]+"% for {I}. Confirm?";},btn:["Confirm","Edit"],path:0,off:[null,"For the demo, I'll keep this split."]},
+  {ly:"Signing order: {PI} first. {I}'s agreement only takes effect once the label has signed the waiver."},
+  {ly:"Sent to {PI}.",doc:{name:"Label Waiver",pages:1,ko:99},do:function(){piece(P5B,"sent");ident(v("invite"),"featured artist","in progress");}},
+  {ly:"{PI} signed the waiver. {I} acknowledged it, with a verified identity.",sim:true,do:function(){sigRep("05bis","Company");sig("05bis","Label","prodinvite",v("prodinvite"));ident(v("invite"),"featured artist","verified");sig("05bis","FeaturedArtist","invite",v("invite"),{kyc:true});piece(P5B,"signed");log("Label Waiver signed by "+v("prodinvite")+", acknowledged by "+v("invite")+".");}},
+  {ly:"The copy signed by {PI}.",doc:{name:"Label Waiver, signed",pages:1,ko:102,id:"05bis",signed:true}},
+  {ly:"{I}'s agreement with {S}.",doc:{name:"Featured Artist Agreement",pages:5,ko:147},do:function(){piece(P5,"to sign");}},
+  {when:function(){return GER();},ly:"Your signature, for {S}.",btn:["Read and sign"],path:0,sign:[P5]},
+  {when:function(){return !GER();},ly:"{R} signed for {S}.",sim:true,do:function(){sigRep("05","Company");}},
+  {ly:"{I} signed, with a verified identity.",sim:true,do:function(){ident(v("invite"),"featured artist","verified");sig("05","FeaturedArtist","invite",v("invite"),{kyc:true});piece(P5,"signed");log("Featured Artist Agreement signed by "+v("invite")+".");}},
+  {ly:"The copy signed by {I}.",doc:{name:"Featured Artist Agreement, signed",pages:5,ko:153,id:"05",signed:true}},
+  {ly:"{I}'s agreement is in effect. Credit: {P} feat. {I}. {I} appears courtesy of {PI}."},
+  {ly:function(){var m=mShares();return "Master splits are now {S} "+m.owner+"%, {J} "+m.prod+"%, {I} "+m.feat+"%.";},do:function(){S.master=masterRows();emit("split.master",S.master.map(function(x){return x[1];}).join(", "));log("Master splits updated with the featured artist.");etape("Featuring wrapped");}}
+]},
+licensing:{label:"Licensing",n:"4",steps:[
+  {ly:function(){var miss=[[P2,"the assignment of your masters"],[P3,"the producer agreement"],[P4,"the split sheet"]].filter(function(x){return S.pieces[x[0]]!=="signed";}).map(function(x){return x[1];});return miss.length?"Chain of title checked. Still missing: "+list(miss)+". Each one gets settled in its own journey. I'll keep going.":"Chain of title checked: it's complete.";},do:function(){ensureOpen();}},
+  {ly:"Here's Believe's offer.\n\nRepertoire: {T}\nTerm: 5 years, worldwide\nYour share: 60%\nAdvance: $5,000\nTarget release: June 2027",btn:["Accept","Negotiate","The short version"],path:1,off:["Accepted, version 1 would go out for signature. For the demo, I'll show you the negotiation.",null,"The short version: five years, worldwide, 60% for you, a $5,000 advance. I'll keep going with the negotiation."],
+   pre:function(){S.contrat={"Template":"Exclusive License, Artist Services","Version":"1","Term":"5 years, worldwide","Revenue share":"60%","Advance":"$5,000","Target release":S.sortie||"June 2027"};piece(P1,"proposed");emit("contrat.version_1","Offer generated from the grid");log("License generated from the grid.");}},
+  {ly:"What do you want to change?",btn:["Your share","The term","The advance"],path:0,off:[null,"The term is negotiated the same way. For the demo, I'll keep going with your share.","The advance is negotiated the same way. For the demo, I'll keep going with your share."]},
+  {ly:"What share are you asking for?"},
+  {ask:true,ex:"70%",what:"a percentage",check:function(x){var n=nums(x);if(!n.length||n[0]>100)return "I need a percentage. For example: 70%.";return null;},do:function(x){S.taux=nums(x)[0];}},
+  {when:function(){return S.taux>65;},ly:"Believe's grid runs from 55% to 65% for your profile. I can give you 65% right now. Above that, I pass it to business affairs.",btn:function(){return ["Take 65%","Ask for "+S.taux+"%"];},path:0,off:[null,"Request sent to business affairs. While they answer, the demo keeps going at 65%."],do:function(){S.acc=65;}},
+  {when:function(){return S.taux<=65&&S.taux>60;},ly:function(){return S.taux+"% is inside Believe's grid. It's granted, no back-and-forth.";},do:function(){S.acc=S.taux;}},
+  {when:function(){return S.taux<=60;},ly:"The offer is already at 60%. I'm leaving it at 60%.",do:function(){S.acc=60;}},
+  {ly:"One line changed: your share. I checked the rest against my clause catalog: no red flags.",doc:{name:"Exclusive License, version 2",pages:7,ko:186},do:function(){S.contrat["Revenue share"]=S.acc+"%";S.contrat["Clause check"]="no red flags";S.contrat["In the grid"]="yes, no back-and-forth";version(2,"Revenue share at "+S.acc+"%");piece(P1,"to sign");log("Version 2: revenue share at "+S.acc+"%, inside the grid.");}},
+  {ly:"Your signature.",btn:["Read and sign"],path:0,sign:[P1]},
+  {ly:function(){var sl=chosen("signataire");return (GER()?"Signed by you, as the artist and for {S}":"Signed by you, by {R} for {S}")+", and by "+(sl?sl+" for Believe":"Believe")+". Audit trail attached.";},sim:true,do:function(){var sl=chosen("signataire");S.contrat["Signature"]="received, with audit trail";sigRep("01","Company");sig("01","Distributor","licencie",sl||"Believe",sl?{}:{img:SQUIG});piece(P1,"signed");emit("signature.recue",P1);log("License signed, three signatures. Audit trail attached.");}},
+  {ly:"Your copy, with the three signatures.",doc:{name:"Exclusive License, signed",pages:7,ko:194,id:"01",signed:true}},
+  {ly:"Believe has your file: the contract, the chain of title and the master splits, ready for its split tool. A signed copy is waiting for you in this thread.",do:function(){etape("Contract signed");if(!S.master)S.master=masterRows();S.remis=true;emit("split.remis","File in the split tool's format");log("Master splits delivered, no retyping.");}}
+]},
+label:{label:"Label service",n:"5",steps:[
+  {ly:"Now the services. Which ones do you want?",list:{button:"See the services",rows:[{title:"Distribution only",desc:"Delivery to the services, and keeping the song live"},{title:"With label services",desc:"Distribution, marketing and playlist pitching"}]},path:1,off:"With distribution only, Schedule C drops out. For the demo, I'll keep going with label services.",do:function(){ensureOpen();S.contrat["Services"]="distribution and label services";log("Services chosen.");}},
+  {ly:"What release date are you aiming for?"},
+  {ask:true,ex:"June 12",what:"a date",do:function(x){var r=readDate(x);S.sortie=r?fmtDate(r.date,true):String(x).trim();S.livraison=livraison(x);S.contrat["Target release"]=S.sortie;}},
+  {ly:function(){return S.livraison?"Got it. Delivery is due 21 days before: by "+S.livraison+".":"Got it. Delivery is due 21 days before the release.";}},
+  {ly:"Any physical formats?",btn:["Yes","No"],path:1,off:["With physical, I add those formats to the license. For the demo, I'll keep going digital only.",null]},
+  {ly:"Who registers the master with SoundExchange, as its owner?",btn:["My company","Believe","SoundExchange?"],path:0,off:[null,"Believe would register and collect for you, and count it in your receipts. For the demo, I'll keep going with your company."],
+   info:{i:2,text:"SoundExchange collects royalties when your master plays on digital radio in the US, like SiriusXM or Pandora.\n\nBy law, 50% goes to the owner of the master, 45% to the featured artists, and 5% to session musicians and vocalists.\n\nThe owner has to register to get paid: {S}, or Believe for you. It's free. Your artist share comes to you directly either way."},
+   do:function(){S.contrat["SoundExchange"]="registered by "+v("societe");log("SoundExchange: "+v("societe")+" registers as rights owner.");}},
+  {ly:"Before the first payment, Believe needs a tax form from {S}. Is it a US company?",btn:["Yes","No"],path:0,off:[null,"A foreign company gives the Form W-8 that applies instead. For the demo, I'll keep going with a US company."],do:function(){S.contrat["Tax form"]="W-9, on file";log("Tax form: W-9, through a separate channel.");}},
+  {ly:"Then it's an IRS Form W-9. It stays out of this thread: no tax number in the chat or in the contract. The license only says the form is on file."},
+  {ly:"Here's what Believe commits to.\n\nRelease: on the target date\nKeeping it live: the whole term\nStatements: quarterly, by master, service and territory\nMarketing: $3,000, paid by Believe, not recoupable",btn:["Approve","Edit"],path:0,off:[null,"An edit would go back to negotiation. For the demo, I'll approve."],do:function(){var n=(parseInt(S.contrat["Version"],10)||1)+1;version(n,"Services, release and tax form");log("Version "+n+": services, release and tax form.");}},
+  {ly:function(){return "It's all in the Deal Terms and in Schedule C of the license. Version "+S.contrat["Version"]+". Your file is complete.";},do:function(){etape("File complete");}}
+]}
+};
+var ORDER=["entree","split","recording","featuring","licensing","label"];
+/* A journey opens by its address: the name after the hash. */
+var HASH={entree:"getting-started",recording:"recording",featuring:"featuring",licensing:"licensing",label:"label-service",split:"split-sheet"};
+function fromHash(){var h="";try{h=(location.hash||"").replace(/^#/,"").toLowerCase();}catch(e){}for(var k in HASH){if(HASH[k]===h||k===h)return k;}return null;}
+function toHash(k){try{var h="#"+HASH[k];if(location.hash!==h&&(location.hash||k!=="entree"))location.hash=h;}catch(e){}}
+
+/* ---------- Messages au format de l'API ---------- */
+function slug(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");}
+function outPayload(m){
+  var base={messaging_product:"whatsapp",recipient_type:"individual",to:"<artist's number>"};
+  if(m.doc){base.type="document";base.document={id:"<media id>",filename:m.file,caption:m.text};return ["document",base];}
+  if(m.btn){var it={type:"button",body:{text:m.text},action:{buttons:m.btn.map(function(b){return {type:"reply",reply:{id:slug(b),title:b}};})}};if(m.hdr)it.header={type:"text",text:m.hdr};if(m.ftr)it.footer={text:m.ftr};base.type="interactive";base.interactive=it;return ["interactive · button",base];}
+  if(m.list){base.type="interactive";base.interactive={type:"list",body:{text:m.text},action:{button:m.list.button,sections:[{title:"Services",rows:m.list.rows.map(function(r){return {id:slug(r.title),title:r.title,description:r.desc};})}]}};return ["interactive · list",base];}
+  if(m.cta){base.type="interactive";base.interactive={type:"cta_url",body:{text:m.text},action:{name:"cta_url",parameters:{display_text:m.cta,url:"https://<verification link>"}}};return ["interactive · cta_url",base];}
+  base.type="text";base.text={body:m.text};return ["text",base];
+}
+function inPayload(kind,text){
+  var m={from:"<artist's number>",id:"wamid.<identifier>",timestamp:String(Math.floor(Date.now()/1000))};
+  if(kind==="button"){m.type="interactive";m.interactive={type:"button_reply",button_reply:{id:slug(text),title:text}};return ["button_reply",m];}
+  if(kind==="list"){m.type="interactive";m.interactive={type:"list_reply",list_reply:{id:slug(text),title:text}};return ["list_reply",m];}
+  m.type="text";m.text={body:text};return ["text",m];
+}
+function pushMsg(dir,pair){S.msgs.push({dir:dir,kind:pair[0],json:pair[1]});renderApi();}
+
+/* ---------- Le fil ---------- */
+var thread=$("thread"),field=$("field"),hint=$("hint"),sheet=$("sheet"),sheetcard=$("sheetcard");
+var wv=$("wv"),wvbody=$("wvbody"),wvfoot=$("wvfoot"),wvClose=null,wvKind="",kycFin=null;
+var run=0,cur="entree",pending=null,ended=false;
+var TICK='<svg viewBox="0 0 18 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6l3.2 3.2L11 1.6"/><path class="c2" d="M7.4 8.3l.9.9L17 1.6"/></svg>';
+var REPLY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/></svg>';
+var LISTI='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>';
+var EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+var LINK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+function add(node){thread.appendChild(node);thread.scrollTop=thread.scrollHeight;return node;}
+function div(cls,html){var d=document.createElement("div");d.className=cls;if(html!=null)d.innerHTML=html;return d;}
+function wait(ms){return new Promise(function(r){if(calm||FAST)r();else setTimeout(r,ms);});}
+function addMsg(dir,html,tag,simu){
+  var prev=thread.lastElementChild;
+  var first=!(prev&&prev.classList.contains("msg")&&prev.classList.contains(dir));
+  var node=div("msg "+dir+(first?" first":""),html);
+  node.dataset.tag=tag;node.dataset.simu=simu?"1":"";
+  return node;
+}
+function tagOf(node){var tg=document.createElement("span");tg.className="tag"+(node.dataset.simu?" simu":"");tg.textContent=node.dataset.tag;node.appendChild(tg);}
+function presence(t){$("presence").textContent=t;}
+function last(who,text){$("lastm").textContent="In the thread. "+who+": "+String(text).split("\n")[0];}
+function userBubble(text,kind,quote){
+  var q="";
+  if(quote){var qt=String(quote).split("\n")[0];q='<span class="q"><b>LYRA</b>'+esc(qt.length>64?qt.slice(0,62)+"…":qt)+'</span>';}
+  var node=addMsg("out",'<div class="bub">'+q+esc(text)+'<i class="gap"></i><span class="meta">'+hh()+TICK+'</span></div>',kind==="text"?"typed text":kind==="list"?"picked from the list":"button tapped");
+  tagOf(node);add(node);
+  if(calm||FAST)node.classList.add("dlv");else setTimeout(function(){node.classList.add("dlv");},320);
+  last("the artist",text);
+  pushMsg("in",inPayload(kind,text));
+}
+function userDoc(d){
+  var node=addMsg("out",'<div class="bub"><div class="docb"><div class="ic">PDF</div><div><b>'+esc(d.name)+'.pdf</b><small>'+d.pages+(d.pages>1?" pages":" page")+' · PDF · '+d.ko+' KB</small></div></div><i class="gap"></i><span class="meta">'+hh()+TICK+'</span></div>',"document sent");
+  tagOf(node);add(node);
+  if(calm||FAST)node.classList.add("dlv");else setTimeout(function(){node.classList.add("dlv");},320);
+  last("the artist",d.name+".pdf");
+  pushMsg("in",["document",{from:"<artist's number>",id:"wamid.<identifier>",timestamp:String(Math.floor(Date.now()/1000)),type:"document",document:{id:"<media id>",filename:d.name+".pdf",mime_type:"application/pdf"}}]);
+}
+async function lyra(m,my){
+  [].forEach.call(thread.querySelectorAll(".msg.out:not(.read)"),function(n){n.classList.add("dlv","read");});
+  var t=div("typing","<i></i><i></i><i></i>");add(t);presence("typing…");
+  await wait(420+Math.min(m.text.length*8,700));
+  t.remove();presence("online");
+  if(my!==run) return null;
+  var h='<div class="bub">';
+  if(m.doc) h+='<div class="docb"><div class="ic'+(m.doc.signed?" sgn":"")+'">PDF</div><div><b>'+esc(m.file)+'</b><small>'+m.doc.pages+(m.doc.pages>1?" pages":" page")+' · PDF · '+m.doc.ko+" KB</small></div></div>"+(m.doc.signed?'<button type="button" class="seeb">'+EYE+"View the signed copy</button>":"");
+  if(m.hdr) h+='<span class="hdr">'+esc(m.hdr)+'</span>';
+  h+=esc(m.text);
+  if(m.ftr) h+='<span class="ftr">'+esc(m.ftr)+'</span>';
+  h+='<i class="gap"></i><span class="meta">'+hh()+'</span></div>';
+  var kind=m.doc?"document":m.btn?"reply buttons":m.list?"list":m.cta?"link button":"text";
+  var node=addMsg("in",h,kind+(m.sim?" · third-party reply, simulated":""),m.sim);
+  if(m.btn||m.list||m.cta){
+    var rb=div("rb");
+    if(m.btn) m.btn.forEach(function(b,i){var bt=document.createElement("button");bt.type="button";bt.innerHTML=REPLY+"<span>"+esc(b)+"</span>";if(i===m.path)bt.className="path";bt.dataset.i=i;rb.appendChild(bt);});
+    if(m.list){var bl=document.createElement("button");bl.type="button";bl.className="path";bl.innerHTML=LISTI+"<span>"+esc(m.list.button)+"</span>";rb.appendChild(bl);}
+    if(m.cta){var bc=document.createElement("button");bc.type="button";bc.className="path";bc.innerHTML=LINK+"<span>"+esc(m.cta)+"</span>";rb.appendChild(bc);}
+    node.appendChild(rb);
+  }
+  if(m.doc){DOCOF[m.doc.name]=m.doc;var od=function(){if(sheet.hidden&&wv.hidden)viewDoc(m.doc);};node.querySelector(".docb").onclick=od;var sb=node.querySelector(".seeb");if(sb)sb.onclick=od;}
+  tagOf(node);add(node);last("LYRA",m.text);pushMsg("out",outPayload(m));
+  return node;
+}
+function setHint(html,ex){
+  if(html==null){hint.classList.remove("on");return;}
+  $("hinttxt").innerHTML=html;$("hintbtn").hidden=!ex;hint.classList.add("on");
+}
+function lock(node){[].forEach.call(node.querySelectorAll(".rb button"),function(b){b.disabled=true;});}
+var sheetClose=null,sheetKind="";
+function openSheet(html,kind,onClose){
+  sheetcard.innerHTML="<button type=\"button\" class=\"x\" id=\"sx\" aria-label=\"Close\">×</button>"+html;
+  sheetKind=kind||"";sheetClose=onClose||null;sheet.hidden=false;
+  $("sx").onclick=dismiss;
+  var f=sheetcard.querySelector(".go")||$("sx");if(f)f.focus();
+}
+function closeSheet(){sheet.hidden=true;sheetcard.innerHTML="";sheetClose=null;sheetKind="";}
+function dismiss(){var f=sheetClose;closeSheet();if(f)f();}
+sheet.onclick=function(e){if(e.target===sheet)dismiss();};
+document.addEventListener("keydown",function(e){if(otpKey&&!wv.hidden&&e.key!=="Escape"){otpKey(e);return;}if(e.key!=="Escape")return;if(!sheet.hidden)dismiss();else if(!wv.hidden)dismissPage();});
+var DOCOF={};
+/* ---------- La page plein ecran : elle glisse sur le fil, la fleche verte y ramene ---------- */
+function openPage(o){
+  $("wvtitle").textContent=o.title;$("wvsub").textContent=o.sub||"";wvbody.innerHTML=o.html||"";wvfoot.innerHTML=o.foot||"";wvbody.scrollTop=0;$("wvbar").style.width="0";
+  wvKind=o.kind||"";wvClose=o.onClose||null;wv.hidden=false;void wv.offsetWidth;wv.classList.add("on");
+  try{$("wvback").focus({preventScroll:true});}catch(e){}
+}
+function closePage(){
+  wvClose=null;wvKind="";kycFin=null;otpKey=null;smsHide();wv.classList.remove("on");
+  var end=function(){if(!wv.classList.contains("on")){wv.hidden=true;wvbody.innerHTML="";wvfoot.innerHTML="";}};
+  if(calm||FAST)end();else setTimeout(end,300);
+}
+function dismissPage(){var f=wvClose;closePage();if(f)f();}
+$("wvback").onclick=dismissPage;
+wvbody.addEventListener("scroll",function(){var mx=wvbody.scrollHeight-wvbody.clientHeight;$("wvbar").style.width=(mx>0?Math.min(100,100*wvbody.scrollTop/mx):100)+"%";});
+function toSig(smooth){
+  var z=wvbody.querySelector(".sg")||wvbody.querySelector(".sigs")||wvbody.querySelector(".paper .tw:last-of-type");if(!z)return;
+  var k=parseFloat(document.querySelector(".phone").style.zoom)||1;
+  var top=wvbody.scrollTop+(z.getBoundingClientRect().top-wvbody.getBoundingClientRect().top)/k-wvbody.clientHeight*0.45;
+  try{wvbody.scrollTo({top:Math.max(0,top),behavior:smooth&&!calm&&!FAST?"smooth":"auto"});}catch(e){wvbody.scrollTop=Math.max(0,top);}
+}
+
+/* ---------- Les contrats : le vrai texte, rempli avec les valeurs du dossier ---------- */
+var CT=(function(){try{return JSON.parse($("contrats-data").textContent);}catch(e){return {docs:{},vals:{},liens:{}};}})();
+var DOCID={"Assignment of Master Recordings":"02","Producer Agreement":"03","Exclusive License, version 2":"01","Label Waiver":"05bis","Featured Artist Agreement":"05","Split sheet":"04"};
+var PID={};PID[P1]="01";PID[P2]="02";PID[P3]="03";PID[P4]="04";PID[P5]="05";PID[P5B]="05bis";
+function chosen(k){return V[k]&&String(V[k]).trim()?String(V[k]).trim():"";}
+/* The specimen values carry the example names: a chosen name replaces them everywhere. */
+/* The signature drawn the first time is kept for the whole file. Redoing it clears it. */
+var KEPT="";
+/* The legal name of the example artist is Sam Lewis, known as Sami. A chosen name replaces both. */
+function legal(){var c=chosen("prenom");return c&&c!==D.prenom?c:"Sam Lewis";}
+function nrm(x){return String(x||"").toLowerCase().replace(/\s+/g," ").trim();}
+/* The artist runs the company when the company signatory carries the artist's name: one hand signs twice, in black ink for the company. */
+function GER(){var r=nrm(v("representant"));return r===nrm(v("prenom"))||r===nrm(legal());}
+function sigRep(id,tag){if(GER())sig(id,tag,"gerant",legal(),{img:KEPT,kyc:true,otp:true});else sig(id,tag,"representant",v("representant"));}
+function fmtCode(c){return c.slice(0,3)+" "+c.slice(3);}
+/* One pass, whole names only, longest first: "Oz" never matches inside another word, and a chosen name is not scanned again.
+   A name typed as it stands in the example changes nothing: Sam Lewis stays the legal name of Sami. */
+var SWAP=[[D.societe,"societe"],["Sam Lewis","prenom"],["Oscar Miles","invite"],["Brume Records LLC","prodinvite"],[D.representant,"representant"],[D.compositeur,"compositeur"],[D.prodinvite,"prodinvite"],[D.coauteur,"coauteur"],[D.titre,"titre"],[D.prenom,"prenom"],[D.invite,"invite"]];
+var SWAPRE=new RegExp("(^|[^A-Za-z0-9])("+SWAP.map(function(p){return p[0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")(?![A-Za-z0-9])","g");
+function swapNames(x){
+  if(!x)return x;
+  return String(x).replace(SWAPRE,function(m,a,n){
+    for(var i=0;i<SWAP.length;i++)if(SWAP[i][0]===n){var k=SWAP[i][1],c=k==="societe"?v("societe"):chosen(k);return a+(c&&c!==D[k]?c:n);}
+    return m;
+  });
+}
+function cget(k,o,depth){
+  if(o&&o[k]!=null)return o[k];
+  var x=CT.vals[k];if(x==="(vide)")return "";if(x)return x;
+  var src=CT.liens[k];if(!src||(depth||0)>3)return "";
+  return cget(src,o,(depth||0)+1);
+}
+/* A signature: the artist's hand, drawn on the screen, or a handwriting of its own for each signer. */
+var SQUIG="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70" fill="none" stroke="#15171C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 46c14-30 24-36 30-18s-8 30-14 20 16-34 30-30-6 34 4 32 14-40 26-36-4 30 6 30 12-22 22-22-2 18 8 18 22-10 34-14 30-6 56-4"/><path d="M30 60c50-8 110-10 176-6"/></svg>');
+function sgHtml(g){return '<span class="sg s-'+g.who+(g.fresh?" sgnew":"")+'">'+(g.img?'<img alt="Signature" src="'+g.img+'">':cesc(g.name))+"</span>";}
+function longDate(d){return d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}
+function shortDate(){return '<span class="nw">'+new Date().toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"})+"</span>";}
+function sig(id,tag,who,name,x){
+  x=x||{};S.sig[id]=S.sig[id]||{};var date=longDate(new Date());
+  var meta="Signed "+date+", "+(x.time||hh())+(x.place?" · "+x.place:"");
+  if(x.kyc)meta+=" · identity verified";
+  if(x.otp)meta+=" · SMS code verified";
+  S.sig[id][tag]={who:who,name:name,img:x.img||"",meta:meta,date:date,short:x.label||name,fresh:!!x.fresh};
+}
+/* How each organization counts the splits: the wording of the specimen, with the numbers of this file. */
+function conversion(c,p){
+  var half=function(q){return String(Math.round(q*50)/100);},out=[];
+  if(c[0]&&p[1]!=null)out.push("ASCAP counts writers and publishers out of 50% each, so "+c[0]+" is registered for "+half(p[1])+"% as writer and "+half(p[1])+"% as publisher");
+  out.push("BMI counts them out of 100% each, so "+cget("artist_legal_name")+" is registered for "+p[0]+"% and "+p[0]+"%");
+  return out.join(". ")+". The MLC registers the publisher's shares";
+}
+/* The values the thread writes into the contracts. Nothing stays in brackets: a field is filled, or it says Pending. */
+function cover(id){
+  var o={},sg=S.sig[id]||{},ms=mShares(),OK="Verified, ID and selfie (simulation)",PEND="Pending",FILE="on file with LYRA";
+  var done=function(p){return S.pieces[p]==="signed";};
+  o.__html={};
+  o.effective_date=longDate(new Date());
+  o.company_address=FILE;o.producer_address=FILE;o.featured_address=FILE;
+  o.data_contact="the contact address on file with LYRA";
+  o.featured_label_signatory="Authorized Signatory";
+  if(GER())o.company_signatory_title="Sole Member";
+  /* the master side, shared by the license, the assignment and the producer agreement */
+  if(S.fee!=null)o.fee=money(S.fee);
+  o.producer_royalty=String(ms.prod);
+  o.soundexchange_share=String(ms.prod);
+  o.ms_owner_share=String(ms.owner);
+  if(S.pieces[P5]){o.ms_featured_name=v("invite");o.ms_featured_share=ms.feat?ms.feat+"%":PEND;}
+  else{o.ms_featured_name="None declared";o.ms_featured_share="Not applicable";}
+  if(S.sortie){o.release_date=S.sortie;var rd=readDate(S.sortie);if(rd){var dl=new Date(rd.date.getTime());dl.setDate(dl.getDate()-21);o.master_delivery_date=fmtDate(dl,true)+", 21 days before the target release date";}}
+  if(id==="01"){
+    if(chosen("signataire"))o.distributor_signatory=chosen("signataire");
+    o.licensor_share=String(S.acc||65);o.advance_amount="5,000";
+    if(S.contrat&&S.contrat["Version"])o.version=S.contrat["Version"];
+    if(!(S.contrat&&S.contrat["Services"]))o.services="Distribution. Schedule C applies once label services are chosen";
+    if(!(S.contrat&&S.contrat["Tax form"]))o.licensor_tax_form="To be provided before the first payment";
+    var day=shortDate();
+    o.__html.ct_assignment_date=done(P2)?day:PEND;o.ct_assignment_identity=done(P2)?OK:PEND;
+    o.__html.ct_producer_date=done(P3)?day:PEND;o.ct_producer_identity=done(P3)?OK:PEND;
+    o.__html.ct_split_date=done(P4)?day:PEND;o.ct_split_identity=done(P4)?OK:PEND;
+    o.ct_split_signers=done(P4)?[cget("artist_legal_name")].concat(S.contribs||[]).join(", "):PEND;
+    if(done(P5)){o.ct_featured_signers=[v("societe"),v("invite"),v("prodinvite")].join(", ");o.__html.ct_featured_date=day;o.ct_featured_identity=OK;}
+    else if(S.pieces[P5]){o.ct_featured_signers=PEND;o.ct_featured_date=PEND;o.ct_featured_identity=PEND;}
+  }
+  if(id==="03"){
+    var w=[v("prenom")].concat(S.contribs||[]),ix=w.indexOf(v("compositeur"));
+    if(S.oeuvre&&ix>0&&S.parts[ix]!=null)o.producer_composition_share=String(S.parts[ix]);
+  }
+  if(id==="04"){
+    var c=S.contribs||[],p=S.parts||[],tot=p.reduce(function(a,b){return a+b;},0);
+    o.creation_date=longDate(new Date(Date.now()-30*864e5));   /* the song exists before its split is signed */
+    p.slice(0,3).forEach(function(q,i){o["w"+(i+1)+"_writer_share"]=String(q);o["w"+(i+1)+"_publisher_share"]=String(q);});
+    if(c[0]&&c[0]!==v("compositeur")){o.w2_legal_name=c[0];o.w2_stage_name=c[0];}
+    if(c[1]&&c[1]!==D.coauteur){o.w3_legal_name=c[1];o.w3_stage_name=c[1];}
+    if(c.length<2){o.w3_legal_name="No third writer";["stage_name","role","pro","ipi","publisher","identity_check"].forEach(function(k){o["w3_"+k]="";});o.w3_writer_share="0";o.w3_publisher_share="0";}
+    o.total_writer_shares=String(tot);o.total_publisher_shares=String(tot);
+    o.share_conversion=conversion(c,p);
+    ["w1","w2","w3"].forEach(function(t,i){
+      var n=i===0?v("prenom"):c[i-1];
+      if(sg[t]){o.__html[t+"_signature"]=sgHtml(sg[t]);o.__html[t+"_signature_date"]=shortDate();}
+      else o[t+"_signature_date"]="";
+      if(n)o[t+"_identity_check"]=isOk(n)?OK:PEND;
+    });
+  }
+  if(id==="05"||id==="05bis")o.featured_credit=v("prenom")+" feat. "+v("invite");
+  if(id==="05"){
+    if(S.guest)o.featured_soundexchange_share=String(S.guest[1]);
+    if(S.session){if(S.session.date)o.session_date=S.session.date;if(S.session.place)o.session_place=S.session.place;}
+    o.waiver_reference=done(P5B)?"Signed on "+o.effective_date:"To be signed first";
+  }
+  if(id==="05bis"&&S.contre){var n=nums(S.contre);if(n.length)o.waiver_override=cget("waiver_override").replace(/\d+(?:\.\d+)?%/,n[0]+"%");}
+  return o;
+}
+function cesc(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function ctypo(x,fr){
+  x=String(x).replace(/'/g,"’");
+  if(fr)x=x.replace(/« /g,"« ").replace(/ »/g," »").replace(/ ([:;?!%€])/g," $1").replace(/(\d) (\d{3})(?!\d)/g,"$1 $2");
+  else x=x.replace(/"([^"]*)"/g,"“$1”");
+  return x;
+}
+function cinline(t,fr,o,lead){
+  var h="",m=lead!==false&&t.match(/^(\d+\.\d+|\d+\.)\s+([\s\S]*)$/);
+  if(m){h="<b>"+m[1]+"</b> ";t=m[2];}
+  var parts=t.split("**");
+  for(var i=0;i<parts.length;i++){
+    var q=parts[i].split(/(\[\[[a-z0-9_]+\]\])/).map(function(seg){
+      var mm=seg.match(/^\[\[([a-z0-9_]+)\]\]$/);
+      if(!mm)return cesc(ctypo(seg,fr));
+      if(o.__html[mm[1]]!=null)return o.__html[mm[1]];
+      return cesc(ctypo(swapNames(cget(mm[1],o)),fr));
+    }).join("");
+    h+=i%2?"<b>"+q+"</b>":q;
+  }
+  return h;
+}
+/* La petite grammaire des sources de contrats, la meme que celle de la page Contrats dynamiques. */
+function renderDoc(id){
+  var src=CT.docs[id]||"",o=cover(id),sg=S.sig[id]||{};
+  var en=/^#PROFILE US/m.test(src),fr=!en,L=src.split(/\r?\n/),h="",i=0,box=[],w=null;
+  var flush=function(){if(box.length){h+='<div class="box">'+box.map(function(b,j){return j===box.length-1&&box.length>2?"<i>"+b+"</i>":"<b>"+b+"</b>";}).join("")+"</div>";box=[];}};
+  while(i<L.length){
+    var l=L[i].trim();i++;
+    if(!l||l.indexOf("//")===0||l.indexOf("#PROFILE")===0)continue;
+    if(l.indexOf("#W ")===0){w=l.slice(3).split(",");continue;}
+    if(l.indexOf("#T ")===0){if(en)box.push(cinline(l.slice(3),fr,o,false));else h+="<h3>"+cinline(l.slice(3),fr,o,false)+"</h3>";continue;}
+    if(l.indexOf("#S ")===0){if(en)box.push(cinline(l.slice(3),fr,o,false));else h+="<h4>"+cinline(l.slice(3),fr,o,false)+"</h4>";continue;}
+    if(l.indexOf("#E ")===0){box.push(cinline(l.slice(3),fr,o,false));continue;}
+    flush();
+    if(l==="#PB"){h+='<div class="pb"></div>';continue;}
+    if(l==="---"){h+="<hr>";continue;}
+    if(l.indexOf("#K ")===0)l=l.slice(3);
+    if(l.indexOf("#H ")===0){h+="<h5>"+cinline(l.slice(3),fr,o,false)+"</h5>";continue;}
+    if(l.indexOf("#A ")===0){h+="<h6>"+cinline(l.slice(3),fr,o,false)+"</h6>";continue;}
+    if(l.indexOf("#LU ")===0){h+='<p class="lu">'+cinline(l.slice(4),fr,o,false)+"</p>";continue;}
+    if(l.indexOf("#L ")===0){h+='<p class="l">'+cinline(l.slice(3),fr,o,false)+"</p>";continue;}
+    if(l.indexOf("#D ")===0){h+='<p class="d">'+cinline(l.slice(3),fr,o,false)+"</p>";continue;}
+    if(l.indexOf("- ")===0){
+      h+="<ul>";i--;
+      while(i<L.length&&L[i].trim().indexOf("- ")===0){var t=L[i].trim().slice(2),m=t.match(/^(\([a-z]+\))\s+([\s\S]*)$/);h+="<li>"+(m?"<b>"+m[1]+"</b> "+cinline(m[2],fr,o,false):cinline(t,fr,o,false))+"</li>";i++;}
+      h+="</ul>";continue;
+    }
+    if(l.charAt(0)==="|"){
+      i--;var rows="",n=0;
+      while(i<L.length&&L[i].trim().charAt(0)==="|"){
+        var r=L[i].trim(),head=r.indexOf("||")===0,cells=r.replace(/^\|\|?/,"").split("|");n=Math.max(n,cells.length);
+        rows+="<tr>"+cells.map(function(c){return(head?"<th>":"<td>")+cinline(c.trim(),fr,o,false)+(head?"</th>":"</td>");}).join("")+"</tr>";i++;
+      }
+      h+='<div class="tw"><table'+(n>4?' class="wide"':"")+">"+(w&&w.length===n?"<colgroup>"+w.map(function(x){return '<col style="width:'+parseFloat(x)+'%">';}).join("")+"</colgroup>":"")+rows+"</table></div>";w=null;continue;
+    }
+    if(l==="#SIGS"){
+      h+='<div class="sigs">';
+      while(i<L.length&&L[i].trim()!=="#END"){
+        var p=L[i].split("|").map(function(c){return c.trim();});i++;
+        if(p.length<4)continue;
+        var nm=cinline(p[1],fr,o,false);if(!nm.replace(/<[^>]*>/g,"").trim())continue;
+        var g=sg[p[3]];
+        h+="<div><b>"+cinline(p[0],fr,o,false)+"</b><span>"+nm+"</span>"+(p[2]?"<span>"+cinline(p[2],fr,o,false)+"</span>":"")+'<span class="zone">'+(g?sgHtml(g):"<small>Signature</small>")+"</span>"+(g?'<span class="sigm">'+cesc(g.meta)+"</span>":"")+"</div>";
+      }
+      i++;h+="</div>";continue;
+    }
+    h+="<p>"+cinline(l,fr,o)+"</p>";
+  }
+  flush();
+  return {en:en,html:'<div class="head"><img class="lg" alt="LYRA" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAAzBAMAAADiEx7zAAAAJFBMVEUAAAAIARYHARUHABYHABUHARUGABUHABUAACkAAAAAAAAAAAA5BTC1AAAADHRSTlMA/bF1UtMqjAYAAAAcpJ0sAAAETklEQVR42p2Xz4scRRTHP13TMztJFrcXb/HSl4Cghz7LQloYQVTEBUEcAumTNyEnyc3Bv2AXxIsiQxa87MENBDwo2K6rBxUZQaKCGyYxyopkmUN2dhy7pz1UdVX1r4TZuky/7q5vv/f9vvfqjbMZA84xAK0nANx/0Ku9CnSOV/WN5+/9QGmtw9pYW2IC4EojjQDS8o43M3P95eEbUfFpC5gY02mvAle3FPyacVd72PmbzdhCcF4d2oDtVRAPjIcLgJGyFqH6ZL4S4ByMbYTss4KHVwBhTNEC0A54QGLFFII7hgBwe72evDl/2gb0gCQ0DKTnwJ3m5i9tYHZkwpvROoGfunBpv3/x1pX/joHpqQX4G8BMsygIbRmcEPC12ZnARXXdnV2/zkffbwJZYPCknkYVAdDW5swDvjX44I5MFgB8HFHgdKGlzgFHBYo/AUyW9MEpJ9EHwIoxrxq/Sldy/VugOFYRp6U3FgNbE9/eUgYkUMIpCt1R+QUiSEzMY5yfbRJEnm35+gr4Os+4mohl0ur9bixTedrooauJhmehXwX0bVUX0EttUiqA80gnTmcMWzx6ZfDrwLNwKoC8DzzM6671GDwCCAa2KqLumzgDgMuwSj2HnonfGXJgsVoFTDxI9lRGhDWAE6v43RghOZ82AhKq763EiGH1cWdiab/QxKTNgDfU7T68UC+D2ZVBBHMPxKARMA0hi2ACRzUOvoJFbSAZ8CGJGwGZABNaMU5cffhMbOe1jzsEeuZei/UZzmlhz70u/HFKl2yWd50udF8c8ZbHEdA+yd39C06Bb9qwOGn0UBaLbzdG4O7N9fXdHyeA+5LV3lKdas0hz33gndrGAMAFrf1cZeTc0x2oDpDXgQ9rGwPAk2M7w/y8vpUqtYDv6vZaw8el3+0Dyo3zxqlUqQVMPAC32BjcXgjw8ndWCsV5Y+roWqkFlB/Livee2v00tE9cqUPLagCPABRQaQyeFMDOsDmcV1de3kXrAdOQ0rgAwA4wD6hqYp0rLk0x12icREO4X3jroZomHuQeuCyzttcgjYZW3zm0nk6bQ25ai9A+T8pzn7M8IB6wnxvvlSvsDIA7QHZNGV/UteblOJSy7BhN1k3fnUhVlgRkew0WYaz6pnNHP1g5L1VZMmQpy+184hKlw/IMgHi6KAVsWIqEUpWlAXeAxFfD9bhU/+EZAJMoL2hPjmqlGaoCKKIGpDyft/OCHsoDyk7raQ3gZfsPTd31IgTuQ8tMabrNOCAICrmjzpHwMbKkEaI0SiWyVsoD59vyZ684hSb2N3YkARvwXKVOAlxicDuKuMM7ipUghsgwFO3BXqFa9hlTmvd9wB+5HWB+YbcUVlxssOPCX5HtNciCu/DaVnnPASKl4ai3cyJQ55Aly5+1/DqI2kRsQWFSGlPo4J6ida+apaHYqAPsA3yONeqrbmfJUowh5+S28Joyw0pR6dy1YrUAB1XA7H+OSD0XFJCTsAAAAABJRU5ErkJggg=="><i>'+(fr?"Demonstration document, no legal effect":"Demonstration document, no legal effect")+'</i><img class="lg" alt="Believe" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAAAyBAMAAAC39cr2AAAAJFBMVEUfKTQkKDMjKDMkKDMAAF4AVlZVVVVVAFUAAAAkKDMjJzM9PT04eFI4AAAADHRSTlMaX9CtAgIDAwD9lgQx5skHAAAGj0lEQVR42r2YYWgb5xnHf9IdkpJBcqFb0GAwt4WibMm4VYOmYwVBvox9Moyx7Jv6YYsbinN0S3xqbPfsxJHckuWcDScpjHplDO/D2NZPpaWg1oUZNpfLUlqTUaG2JHahtArZrDv5TtqH90466c5z4wbfF+nufnfP87zv8/zf571EhXs7nMWTMxo7P5L3yEuvaqlpds9gu1OEjmnt3GDidaB1Y1tuSQNWYMoEmvbODcorX4x7QnCqApCwMzuP8ADA2LbcLEDTUO80ALvl7TzCCsDn22FqrgicAs3gyx1JAGd7zq8EqwHQ8XYtS91nAbLWrhmU3zChtaDuXuH/cNV0ZgpfYg7le32gbJ8xdlFpQMoY1v0w2D7MUv/MuPmqm48+4EGPkw6zdHgbBweQxDXA2XBlACmU7v5/VYQjCv6UgXsduOtPorjpk28oQH7wbx/Sm0NXLr1spt/TPakXSO7k1xk9YVj9ccuhoC1KL5vp9+xxGeBY78axLZBQhGfnASprvXwo5TTAmdT7I5w+BNwSMmBfLgPM1cZlsB82If2OAfDCEGin1cIAEoowOQ+AbjerYrSqb10FID079qu+RO78ArgkRuVaGYBTidFhlcwFDagZBtgXgI1GAVe+HEZCBv9SFGeZl34ifD/6YWBh+gzxZfD26/OBE7MtD3UOwKyCmwBoGRGkl6XpYvCWp84BULnW7SLSs3q8yB2d7/7PXDR8ldWHIL0HoC3hHn2kD4kt/IoNuKVs70rmqhqnLPKM2Tspfe6rrPYfGe+1nwqB70f8EAcLP2kAb/d1VvoP4iK0hwg7VU23Afamgb8DLFoDyMVqrMH0gjXwMuFDpP6lvtZNL3gdANsLuoJ6sT2IxEvbuor3Iw3AOXDABEj/oR41+LGYwecze4RMuKwrQNoASwFoWB9FkLDBOX2qqzDScwCtM7VazgRYH4oazBoAlVtrt08CpM5bdQ1AUbE1IDEZg4QM2rWx0REAUuewFgC+ZuS/89hNgL1SVCFF6q9N5NUZBUCl8AnAkCVuNTsxSMjgmJ7PlcWQK2quAbRq6sq/pAkT6ExEp/AOwEVdWrHyNwGOq1IF4DhOEuBFyXszgvQMNvXMyqotCm7oNwkAL2mBl2kAKNWIxSsAdgZY8QASkrMhfuULABOqSNY+pFeH2ZwFGSGYd39sA5giU15ZA0wl0sUpAHeFi48XIenIsqlBcvNRBaBoxCFdg0UDwJoygZ/bHYCSePMagDk82MQsDAH8OqSx37PUOSA1/VezAY6BGUHOG8GQtvxK842UB+P5NNqnNgbrd9gXN2W5AXQkChEkpKWS3z1ssWo/HdUZbasWUqhZx0O6Tz3NlocvbvpegMUq/436VL2vBhHiptkAde3/t/pCyD3nC79cNiOXCqwuAImyEDYycYifpanTImsuhJi5kGQ/F/FXVgAnO3C1DiQVoDUBxCJ+WSiq1S2u3xafBdhXi+xkwln6YAMIIRig/g1IKUB7KySYQ30ZkJYNgK++3wY4nqvVakfU7mQP1KEGpC9O1Gq1G92+uD0VeHdJAjMOCSKUKt65Je+1KwB1YxlA+vdD8A/m4ver6pN14IFTMlQfnwU6OrQ39gd9g2JReJMAwQmQwGAqO8ITjmicGlbG1CA18/R3//jnzXkg8Wkkl73r+4FnPpO+tcmDFeBytYCcNv3BLxYKSFMEyGrOR7ylgv+q0p/00qsaYr6FZEyfv3FEfwRgI1o70gZAZ9G7sXq2AfCBAhzxE80ZLoAXRVypUA2aqJFQNR35NkDnhUlyGkBlOLoCrx9qAE9drYuWtjUhdcUYOnkvBhmXKe3XI9u17EJB2hTj7LdSzu9ivqoM/exK2E9/j+CLsdiSf2MAkUke0s9ERqtYgNW+tqkd+xVnsr+7rAJIHXG2GI9Y2cbonkGDzXEgN9LXblXjDC6HnbJ/WeiJG9RVALnPb3ukkJs0Hv5w8CtG5V0g81gItfXYHfaxsFNlvwlZXvATHYB8H1JxE1kzXZYBOkqwdpVHMgD/7KHOWPzewiu3rvS89xc27UkCYYtB3MYzpp+lNw/6m7f1VTEa704HO4d9YqNlFgct6gRutro+iYJqb/pr4bjbh3zFmf9kPfFoAzonni8DJEaDYFx5+pJYptfFrHzfAG4bnP0mcHBYeP1QE6B1urv5c1NXgX3He/MRRqrXm62DCT/3L+/XnJfe721UXbn0+yZzt3Vr628yVu7F7Im+p7ZB7Ffu3PofGWmwRKyudnEAAAAASUVORK5CYII="></div>'+h+'<footer class="foot">For presentation purposes</footer>'};
+}
+function docPage(id){
+  var r=renderDoc(id),sg=S.sig[id]||{},who=Object.keys(sg).map(function(k){return sg[k].short;}).filter(function(x,i,a){return a.indexOf(x)===i;});
+  Object.keys(sg).forEach(function(k){sg[k].fresh=false;});
+  var chips='<div class="chips"><span>English</span><span>New York law</span>'+(who.length?'<span class="ok">Signed: '+cesc(who.join(", "))+"</span>":"")+"</div>";
+  return chips+'<div class="paper'+(r.en?" en":"")+'">'+r.html+"</div>";
+}
+function viewDoc(d){
+  var id=d.id||DOCID[d.name];
+  openPage({title:d.name,sub:d.pages+(d.pages>1?" pages":" page")+" · PDF · "+d.ko+" KB",html:docPage(id),kind:"view"});
+  if(d.signed){wvfoot.innerHTML="<button type=\"button\" class=\"gobtn line\" id=\"wvsig\">Go to the signatures</button>";$("wvsig").onclick=function(){toSig(true);};}
+}
+/* La signature au doigt */
+var padCtx=null,padInk=false;
+function initPad(){
+  var c=$("pad"),w=$("padw"),last=null;
+  c.width=Math.max(2,Math.round(c.clientWidth*2));c.height=Math.max(2,Math.round(c.clientHeight*2));
+  padCtx=c.getContext("2d");padCtx.scale(2,2);padCtx.lineWidth=2.3;padCtx.lineCap="round";padCtx.lineJoin="round";padCtx.strokeStyle="#1A2E6E";padCtx.fillStyle="#1A2E6E";padInk=false;
+  function pos(e){var b=c.getBoundingClientRect();return {x:(e.clientX-b.left)*(c.clientWidth/(b.width||1)),y:(e.clientY-b.top)*(c.clientHeight/(b.height||1))};}
+  c.onpointerdown=function(e){e.preventDefault();try{c.setPointerCapture(e.pointerId);}catch(x){}last=pos(e);padInk=true;w.classList.add("ink");padCtx.beginPath();padCtx.arc(last.x,last.y,1.1,0,6.3);padCtx.fill();};
+  c.onpointermove=function(e){if(!last)return;var q=pos(e);padCtx.beginPath();padCtx.moveTo(last.x,last.y);padCtx.lineTo(q.x,q.y);padCtx.stroke();last=q;};
+  c.onpointerup=c.onpointercancel=function(){last=null;};
+}
+function clearPad(){var c=$("pad");if(!c||!padCtx)return;padCtx.clearRect(0,0,c.width,c.height);padInk=false;$("padw").classList.remove("ink");}
+function padData(){if(!padInk)return "";try{return $("pad").toDataURL("image/png");}catch(e){return "";}}
+/* La verification d'identite, en deux temps : la piece, puis le selfie. Simulee, et dite comme telle. */
+function kycPage(finish){
+  var IDC='<svg class="idc" viewBox="0 0 200 126" aria-hidden="true"><rect x="2" y="2" width="196" height="122" rx="12" fill="#E9EDF3"/><circle cx="52" cy="50" r="19" fill="#B8C1CF"/><path d="M22 100c4-24 56-24 60 0z" fill="#B8C1CF"/><rect x="100" y="32" width="78" height="9" rx="4" fill="#C7CEDA"/><rect x="100" y="50" width="60" height="8" rx="4" fill="#D3D9E3"/><rect x="100" y="67" width="70" height="8" rx="4" fill="#D3D9E3"/><rect x="22" y="108" width="156" height="6" rx="3" fill="#D3D9E3"/></svg>';
+  var FACE='<svg class="fc" viewBox="0 0 120 150" aria-hidden="true"><circle cx="60" cy="56" r="30" fill="#AEB7C6"/><path d="M6 150c2-48 106-48 108 0z" fill="#AEB7C6"/></svg>';
+  var OKS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+  var later=function(f,ms){if(calm||FAST)f();else setTimeout(f,ms);};
+  var live=function(){return !wv.hidden&&wvKind==="kyc";};
+  function head(n){return "<div class=\"steps2\"><b class=\"on\">1</b>ID<i></i><b"+(n>1?' class="on"':"")+">2</b>Selfie</div>";}
+  function s1(){
+    $("wvsub").textContent="Step 1 of 2 · simulation";
+    wvbody.innerHTML='<div class="kyc">'+head(1)+"<h4>Your ID</h4><p>Fit the front of your ID inside the frame.</p>"+'<div class="cam" id="cam">'+IDC+'<span class="frame"></span><span class="scanl"></span><span class="okm">'+OKS+"</span></div>"+"<div class=\"sim2\">Simulation. No picture is taken. In real life, the link opens the identity provider's flow.</div></div>";
+    wvfoot.innerHTML="<button type=\"button\" class=\"gobtn\" id=\"k1\">Scan my ID</button>";
+    $("k1").onclick=function(){this.disabled=true;this.textContent="Reading the ID…";$("cam").classList.add("run");later(function(){if(!live())return;$("cam").classList.add("done");later(s2,650);},1150);};
+  }
+  function s2(){
+    if(!live())return;
+    $("wvsub").textContent="Step 2 of 2 · simulation";
+    wvbody.innerHTML='<div class="kyc">'+head(2)+"<h4>Your selfie</h4><p>Place your face in the oval, and look at the screen.</p>"+'<div class="cam face" id="cam">'+FACE+'<span class="frame"></span><span class="okm">'+OKS+"</span></div>"+"<div class=\"sim2\">Simulation. No picture is taken.</div></div>";
+    wvfoot.innerHTML="<button type=\"button\" class=\"gobtn\" id=\"k2\">Take the selfie</button>";
+    $("k2").onclick=function(){this.disabled=true;$("cam").classList.add("flash");later(function(){if(!live())return;$("cam").classList.add("done");later(s3,650);},420);};
+  }
+  function s3(){
+    if(!live())return;
+    $("wvsub").textContent="Done · simulation";
+    wvbody.innerHTML='<div class="kyc"><div class="bigok">'+OKS+"</div><h4>Identity verified</h4><p>The ID and the selfie match. The result goes into your file.</p></div>";
+    wvfoot.innerHTML="<button type=\"button\" class=\"gobtn\" id=\"k3\">Back to the thread</button>";
+    $("k3").onclick=fin;
+  }
+  function fin(){closePage();finish();}
+  openPage({title:"Identity check",sub:"Step 1 of 2 · simulation",kind:"kyc"});
+  kycFin=fin;s1();
+}
+
+function askText(st,my){
+  return new Promise(function(res){
+    var ex=typeof st.ex==="function"?st.ex():st.ex;
+    if(st.save&&V[st.save]&&String(V[st.save]).trim())ex=String(V[st.save]).trim();
+    setHint("Free text: <b>"+esc(st.what||"some text")+"</b>. Example: <b>"+esc(ex)+"</b>",ex);
+    field.placeholder="Type your answer";
+    pending={type:"ask",ex:ex,submit:function(val){
+      userBubble(val,"text");
+      var err=st.check?st.check(val):null;
+      if(err){lyra({text:err},my);return;}
+      pending=null;setHint(null);field.placeholder="Message";res(val);
+    },path:function(){this.submit(ex);}};
+  });
+}
+function askChoice(node,m,my){
+  return new Promise(function(res){
+    setHint(m.list?"Reply with a <b>list</b>: tap the button, then a row.":m.cta?"Reply with a <b>link button</b>.":"Reply with a <b>button</b>, nothing to type.",null);
+    var btns=node.querySelectorAll(".rb button");
+    function done(i,title,kind){lock(node);pending=null;setHint(null);if(title!=null)userBubble(title,kind,m.text);res(i);}
+    if(m.btn){[].forEach.call(btns,function(b){b.onclick=function(){b.classList.add("pick");done(+b.dataset.i,m.btn[+b.dataset.i],"button");};});}
+    if(m.list){btns[0].onclick=function(){
+      openSheet('<h3>'+esc(m.list.button)+'</h3>'+m.list.rows.map(function(r,i){return '<label class="row"><input type="radio" name="lr" value="'+i+'"><span><b>'+esc(r.title)+'</b><small>'+esc(r.desc)+'</small></span></label>';}).join("")+"<button type=\"button\" class=\"go\" id=\"lgo\" disabled>Send</button>","list");
+      var go=$("lgo");sheetcard.onchange=function(){go.disabled=false;};
+      go.onclick=function(){var i=+sheetcard.querySelector("input:checked").value;closeSheet();done(i,m.list.rows[i].title,"list");};
+    };}
+    if(m.cta){btns[0].onclick=function(){if(wv.hidden)kycPage(function(){done(0,null,null);});};}
+    pending={type:"choice",path:function(){
+      if(m.btn){btns[m.path].click();}
+      else if(m.list){if(sheet.hidden){btns[0].click();}var r=sheetcard.querySelectorAll("input")[m.path];r.checked=true;$("lgo").disabled=false;$("lgo").click();}
+      else if(m.cta){if(wv.hidden)btns[0].click();if(kycFin)kycFin();}
+    },nudge:function(val){userBubble(val,"text");lyra({text:"Reply with one of the buttons, just above."},my);}};
+  });
+}
+function askFile(st,my){
+  return new Promise(function(res){
+    var plus=document.querySelector(".comp .plus");
+    setHint("Reply with a <b>file</b>: tap the + button, bottom left.",null);
+    plus.classList.add("on");plus.setAttribute("role","button");plus.setAttribute("aria-label","Attach the file");plus.removeAttribute("aria-hidden");
+    var go=function(){plus.classList.remove("on");plus.onclick=null;plus.removeAttribute("role");plus.removeAttribute("aria-label");plus.setAttribute("aria-hidden","true");pending=null;setHint(null);userDoc(st.send);res();};
+    plus.onclick=go;
+    pending={type:"file",path:go,nudge:function(val){userBubble(val,"text");lyra({text:"Send the file with the + button, bottom left."},my);}};
+  });
+}
+var SIGNDOC={};SIGNDOC[P1]="Exclusive License, version 2";SIGNDOC[P2]="Assignment of Master Recordings";SIGNDOC[P4]="Split sheet";SIGNDOC[P5]="Featured Artist Agreement";
+var otpKey=null,smsT=null;
+function smsHide(){clearTimeout(smsT);var b=$("smsb");if(b)b.remove();}
+function smsShow(code){
+  smsHide();var b=document.createElement("button");b.type="button";b.className="smsb";b.id="smsb";b.setAttribute("aria-label","Text message received. Security code: "+fmtCode(code));
+  b.innerHTML="<span class=\"ic\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 3.5c-5 0-9 3.4-9 7.6 0 2.4 1.3 4.5 3.4 5.9-.2 1.1-.8 2.2-1.6 3 1.7 0 3.3-.6 4.5-1.5.9.2 1.8.3 2.7.3 5 0 9-3.4 9-7.700S17 3.500 12 3.500z\"/></svg></span><span class=\"tx\"><b>Messages<small>now</small></b><span>LYRA: "+fmtCode(code)+" is your security code to sign. Don't share it.</span></span>";
+  wv.appendChild(b);void b.offsetWidth;b.classList.add("on");b.onclick=smsHide;
+  if(!(calm||FAST))smsT=setTimeout(function(){b.classList.remove("on");},7000);
+}
+function askSign(pieces,my){
+  return new Promise(function(res){
+    var pc=pieces[0],id=PID[pc],d=DOCOF[SIGNDOC[pc]]||{name:pc,pages:1,ko:0},tag={"04":"w1","02":"Artist","01":"Artist"}[id]||"",fini=false,quick=false,code="",typed="";
+    var here=function(){return !fini&&!wv.hidden&&wvKind==="sign";};
+    function bar(n,first,last){var L=[first||"Approved","Code",last||"Sign"],h='<div class="steps2">';for(var i=0;i<3;i++)h+=(i?"<i></i>":"")+"<b"+(i<n?' class="on"':"")+">"+(i+1)+"</b>"+L[i];return h+"</div>";}
+    function boxes(){var o=$("otpb");if(!o)return;for(var i=0;i<6;i++){o.children[i].textContent=typed[i]||"";o.children[i].className=i===typed.length?"cur":"";}}
+    function kbShow(){var k=$("kb");if(k)k.hidden=false;}
+    function good(){otpKey=null;smsHide();typed=code;boxes();$("otpb").classList.add("ok");$("otpmsg").textContent="Code verified.";if(calm||FAST||quick)step3();else setTimeout(function(){if(here())step3();},700);}
+    function key(ch){
+      var o=$("otpb");if(!o||o.classList.contains("ok"))return;
+      if(ch==="<")typed=typed.slice(0,-1);else if(typed.length<6)typed+=ch;
+      o.classList.remove("ko");$("otpmsg").textContent="";boxes();
+      if(typed.length===6){if(typed===code)good();else{o.classList.add("ko");$("otpmsg").textContent="That's not the right code. Try again.";typed="";setTimeout(boxes,calm||FAST?0:380);}}
+    }
+    function step2(){
+      code=String(Math.floor(100000+Math.random()*900000));typed="";
+      $("wvsub").textContent="To sign · step 2 of 3";$("wvbar").style.width="100%";
+      wvbody.innerHTML="<div class=\"kyc otp\"><h4>Security code</h4><p>I texted you a security code. Note it, then enter it here.</p><div class=\"otpb\" id=\"otpb\" role=\"button\" tabindex=\"0\" aria-label=\"Enter the security code\"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class=\"otpm\" id=\"otpmsg\" role=\"status\"></div><button type=\"button\" class=\"lnk\" id=\"otpre\">Resend the code</button><div class=\"sim2\">Simulation. No text message is sent. In real life, the code goes to the signer's number.</div></div>";
+      wvbody.scrollTop=0;
+      var keys="";["1","2","3","4","5","6","7","8","9","","0","<"].forEach(function(k){keys+=k===""?"<span></span>":'<button type="button" data-k="'+k+'"'+(k==="<"?" aria-label=\"Delete a digit\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6-7z\"/><path d=\"m12 9.500 5 5m0-5-5 5\"/></svg>":">"+k)+"</button>";});
+      wvfoot.innerHTML=bar(2)+"<div class=\"kb\" id=\"kb\" hidden><button type=\"button\" class=\"otps\" id=\"otps\" aria-label=\"Enter the code received by text: "+fmtCode(code)+'"><b>'+fmtCode(code)+"</b><small>From Messages</small></button>"+'<div class="kp" id="kp">'+keys+"</div></div>";
+      boxes();
+      $("otpb").onclick=kbShow;$("otpre").onclick=function(){smsShow(code);};
+      $("otps").onclick=function(){if(!$("otpb").classList.contains("ok"))good();};
+      $("kp").onclick=function(e){var t=e.target.closest("button");if(t)key(t.getAttribute("data-k"));};
+      otpKey=function(e){if(/^[0-9]$/.test(e.key)){kbShow();key(e.key);e.preventDefault();}else if(e.key==="Backspace"){key("<");e.preventDefault();}};
+      if(calm||FAST||quick){smsShow(code);kbShow();}else{setTimeout(function(){if(here()&&$("otpb"))smsShow(code);},350);setTimeout(function(){if(here())kbShow();},1300);}
+    }
+    function step3(){
+      otpKey=null;smsHide();
+      $("wvsub").textContent="To sign · step 3 of 3";wvbody.innerHTML=docPage(id);
+      var kept=KEPT,two=GER()&&id!=="04"&&!!tag,only=GER()&&!tag;
+      wvfoot.innerHTML=bar(3)+'<div class="padw'+(kept?" ink kept":"")+'" id="padw"><canvas id="pad"></canvas>'+(kept?"<img id=\"padkept\" alt=\"Your signature, kept\" src=\""+kept+'">':"")+"<span>Sign here, with your finger</span></div><div class=\"padrow\"><button type=\"button\" class=\"clr\" id=\"pclr\">"+(kept?"Redo":"Clear")+"</button><button type=\"button\" class=\"gobtn\" id=\"sgo\">Sign</button></div><p>"+(two?"One signature: it counts for you and for "+cesc(v("societe"))+". ":only?"You are signing for "+cesc(v("societe"))+". ":"")+(kept?"Your signature is kept for this file. ":"")+"Electronic signature with audit trail, sandbox mode.</p>";
+      initPad();$("pclr").onclick=function(){var k=$("padkept");if(k){k.remove();KEPT="";$("padw").classList.remove("kept");this.textContent="Clear";}clearPad();};$("sgo").onclick=signe;toSig(true);
+    }
+    function signe(){
+      if(fini)return;fini=true;wvClose=null;pending=null;otpKey=null;
+      var img=padData()||KEPT||"";if(img){KEPT=img;S.sigImg=img;}
+      if(tag)sig(id,tag,"artiste",v("prenom"),{img:img,kyc:true,otp:true,fresh:true});
+      if(id==="02")sig(id,"ArtistShortForm","artiste",v("prenom"),{img:img,kyc:true,otp:true,fresh:true});
+      if(GER()&&id!=="04")sig(id,"Company","gerant",legal(),{img:img,kyc:true,otp:true,fresh:true});
+      $("wvsub").textContent="Signed";wvbody.innerHTML=docPage(id);wvfoot.innerHTML=bar(3,"Approved","Signed");toSig(false);
+      var fin=function(){closePage();res(true);};
+      if(calm||FAST||quick)fin();else setTimeout(fin,1100);
+    }
+    openPage({title:d.name,sub:"To sign · step 1 of 3",html:docPage(id),kind:"sign",onClose:function(){pending=null;res(false);}});
+    wvfoot.innerHTML=bar(1,"Read and approve")+"<button type=\"button\" class=\"gobtn\" id=\"vgo\">Approve</button>";
+    $("vgo").onclick=step2;
+    pending={type:"sign",path:function(){quick=true;if($("vgo"))$("vgo").click();if($("otps"))$("otps").click();if($("sgo"))$("sgo").click();}};
+  });
+}
+async function doStep(st,my){
+  if(st.auto){userBubble(st.auto,"text");if(st.do)st.do();renderDash();return;}
+  if(st.ask){var val=await askText(st,my);if(my!==run)return;if(st.save)V[st.save]=val;nomsDossier();syncInputs();if(st.do)st.do(val);renderDash();return;}
+  if(st.send){await askFile(st,my);if(my!==run)return;if(st.do)st.do();renderDash();return;}
+  if(st.pre)st.pre();
+  var m={text:F(st.ly),sim:st.sim,path:st.path};
+  if(st.hdr)m.hdr=F(st.hdr);if(st.ftr)m.ftr=st.ftr;
+  if(st.btn)m.btn=(typeof st.btn==="function"?st.btn():st.btn).slice();
+  if(st.list)m.list=st.list;if(st.cta)m.cta=st.cta;
+  if(st.doc){m.doc=st.doc;m.file=st.doc.name+".pdf";}
+  renderDash();
+  var node=await lyra(m,my);if(my!==run||!node)return;
+  if(m.btn||m.list||m.cta){
+    var i=await askChoice(node,m,my);if(my!==run)return;
+    while(st.info&&m.btn&&m.btn.length>st.info.i&&i===st.info.i){
+      await lyra({text:F(st.info.text)},my);if(my!==run)return;
+      m={text:F(st.ly),sim:st.sim,path:st.path,btn:m.btn.filter(function(_,j){return j!==st.info.i;})};
+      node=await lyra(m,my);if(my!==run||!node)return;
+      i=await askChoice(node,m,my);if(my!==run)return;
+    }
+    if(st.pick)st.pick(i);
+    if((m.btn||m.list)&&i!==st.path){var off=Array.isArray(st.off)?st.off[i]:st.off;if(off){await lyra({text:F(off)},my);if(my!==run)return;}}
+    if(st.sign){
+      var ok=await askSign(st.sign,my);if(my!==run)return;
+      while(!ok){
+        var again={text:"Nothing is signed. The document is waiting for you here.",btn:["Read and sign"],path:0};
+        var n2=await lyra(again,my);if(my!==run||!n2)return;
+        await askChoice(n2,again,my);if(my!==run)return;
+        ok=await askSign(st.sign,my);if(my!==run)return;
+      }
+    }
+  }
+  if(st.do)st.do();
+  renderDash();
+}
+async function play(key,keep){
+  var my=++run;cur=key;ended=false;pending=null;closeSheet();var pl=document.querySelector(".comp .plus");pl.classList.remove("on");pl.onclick=null;if(!wv.hidden)closePage();setHint(null);$("b-follow").hidden=true;toHash(key);
+  if(!keep){thread.innerHTML="";add(div("info","Simulation. You're chatting with LYRA's business account. People, terms and figures are illustrative."));add(div("day","Today"));}
+  else add(div("day","Journey: "+SC[key].label));
+  renderSeg();renderDash();
+  var steps=SC[key].steps;
+  for(var i=0;i<steps.length;i++){
+    if(my!==run)return;
+    if(steps[i].when&&!steps[i].when())continue;
+    $("capstep").textContent=SC[key].label+", step "+(i+1)+" of "+steps.length;
+    await doStep(steps[i],my);
+  }
+  if(my!==run)return;
+  ended=true;$("capstep").textContent=SC[key].label+", done";
+  add(div("endc","Journey complete: "+SC[key].label));
+  var nx=ORDER[ORDER.indexOf(key)+1];var bf=$("b-follow");
+  if(nx){bf.hidden=false;bf.textContent="Next journey: "+SC[nx].label;bf.onclick=function(){play(nx,true);};}
+}
+
+/* ---------- Dashboard ---------- */
+var tab="live";
+function pill(st,c){
+  if(c===undefined)c={"signed":"ok","verified":"ok","in progress":"info","sent":"info","to sign":"info","proposed":"info","missing":"bad"}[st]||"";
+  return '<span class="pill '+c+'">'+esc(st)+'</span>';
+}
+function dl(o){var k=Object.keys(o);return "<dl>"+k.map(function(x){return "<dt>"+esc(x)+"</dt><dd"+(o[x]?"":' class="nil"')+">"+(o[x]?esc(o[x]):"pending")+"</dd>";}).join("")+"</dl>";}
+function counts(){
+  var pk=Object.keys(S.pieces),ik=Object.keys(S.ids);
+  return {p:pk.length,ps:pk.filter(function(k){return S.pieces[k]==="signed";}).length,i:ik.length,iv:ik.filter(function(k){return S.ids[k].st==="verified";}).length};
+}
+function dossierObj(){
+  return {dossier:{artiste:v("prenom"),titre:v("titre"),offre:"Artist Services",etape:S.etape||null},
+    structure:S.structOk?{denomination:v("societe"),representant:v("representant"),source:"state registry (simulated)"}:null,
+    identites:Object.keys(S.ids).map(function(k){var x=S.ids[k];return {personne:k,role:x.role,etat:x.st,methode:x.st==="verified"?"ID and selfie (simulation)":null,date:x.h||null};}),
+    contrat:S.contrat,
+    pieces:Object.keys(S.pieces).map(function(k){return {piece:k,etat:S.pieces[k]};}),
+    partage:{oeuvre:S.oeuvre?S.oeuvre.map(function(n,i){return {nom:n,part:S.parts[i]};}):[],etat_oeuvre:S.oeuvreEtat||null,master:S.master?S.master.map(function(m){return {nom:m[0],part:m[1]};}):[],remis_a_l_outil_de_split:S.remis}};
+}
+function renderDash(){
+  $("dtitle").textContent="File: “"+v("titre")+"”";
+  $("dsub").textContent=v("prenom")+(S.structOk?" · "+v("societe"):"")+" · Artist Services";
+  $("dstep").textContent=S.etape||"Thread not open";
+  var c=counts(),h="";
+  if(tab==="live"){
+    h+='<div class="kpis">'
+      +"<div class=\"card kpi\"><h3>Step</h3><div class=\"in\"><div class=\"v t\">"+esc(S.etape||"Thread not open")+"</div><p>Latest change received</p></div></div>"
+      +"<div class=\"card kpi\"><h3>Signed documents</h3><div class=\"in\"><div class=\"v\">"+c.ps+' / '+c.p+"</div><p>Contracts in the chain of title</p></div></div>"
+      +"<div class=\"card kpi\"><h3>Verified identities</h3><div class=\"in\"><div class=\"v\">"+c.iv+' / '+c.i+"</div><p>Result, date and method</p></div></div>"
+      +"<div class=\"card kpi\"><h3>Events</h3><div class=\"in\"><div class=\"v\">"+S.ev.length+"</div><p>Sent to your system</p></div></div>"
+      +'</div>';
+    var pk=Object.keys(S.pieces),ik=Object.keys(S.ids);
+    h+='<div class="g2"><div class="stack">';
+    h+="<div class=\"card\"><h3>File</h3><div class=\"in\">"+dl({"Artist":v("prenom"),"Song":"“"+v("titre")+"”","Offer":"Artist Services","Company":S.structOk?v("societe"):"","Company signatory":S.structOk&&V.representant?v("representant"):"","Step":S.etape})+'</div></div>';
+    var ck=["Template","Version","Term","Revenue share","Advance","Services","Target release","SoundExchange","Tax form","Clause check","In the grid","Signature"],co={};ck.forEach(function(k){co[k]=S.contrat[k]||"";});
+    h+="<div class=\"card\"><h3>Contract <small>Deal terms of the license</small></h3><div class=\"in\">"+(Object.keys(S.contrat).length?dl(co):'<div class="empty">No license yet. It comes in with the Licensing journey.</div>')+'</div></div>';
+    h+='</div><div class="stack">';
+    h+="<div class=\"card\"><h3>Documents</h3><div class=\"in tw\">"+(pk.length?"<table><thead><tr><th>Document</th><th>Status</th></tr></thead><tbody>"+pk.map(function(k){return "<tr><td>"+esc(k)+"</td><td>"+pill(S.pieces[k])+"</td></tr>";}).join("")+'</tbody></table>':"<div class=\"empty\">No documents yet. They come in with the journeys.</div>")+'</div></div>';
+    h+="<div class=\"card\"><h3>Identities <small>Never the ID itself</small></h3><div class=\"in tw\">"+(ik.length?"<table><thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Date</th></tr></thead><tbody>"+ik.map(function(k){var x=S.ids[k];return "<tr><td>"+esc(k)+"</td><td>"+esc(x.role)+"</td><td>"+pill(x.st)+'</td><td class="num">'+(x.h||"")+"</td></tr>";}).join("")+'</tbody></table>':"<div class=\"empty\">No verification requested.</div>")+'</div></div>';
+    h+='<div class="card"><h3>Two copyrights, linked <small>'+esc(S.oeuvreEtat||"")+'</small></h3><div class="in">';
+    h+='<div class="cr"><b>The song</b><code>ISWC '+esc(cget("iswc"))+'</code></div>';
+    if(S.oeuvre){h+='<div class="bar">'+S.parts.map(function(p){return '<i style="width:'+p+'%"></i>';}).join("")+'</div><div class="tw"><table><thead><tr><th>Songwriter</th><th class="num">Split</th></tr></thead><tbody>'+S.oeuvre.map(function(n,i){return "<tr><td>"+esc(n)+'</td><td class="num">'+S.parts[i]+"%</td></tr>";}).join("")+'<tr><td><b>Total</b></td><td class="num"><b>'+S.parts.reduce(function(a,b){return a+b;},0)+'%</b></td></tr></tbody></table></div>';}
+    else h+='<div class="empty">No songwriting splits yet.</div>';
+    h+='<div class="cr lk"><span>One title, two copyrights. They travel in the same file.</span></div>';
+    h+='<div class="cr"><b>The master</b><code>ISRC '+esc(cget("isrc"))+'</code></div>';
+    if(S.master){h+='<div class="tw"><table><thead><tr><th>Owner and royalties</th><th class="num">Share</th></tr></thead><tbody>'+S.master.map(function(m){return "<tr><td>"+esc(m[0])+'</td><td class="num">'+m[1]+"%</td></tr>";}).join("")+'</tbody></table></div>';}
+    else h+='<div class="empty">No master splits yet.</div>';
+    h+='</div></div>';
+    h+="<div class=\"card\"><h3>Log</h3><div class=\"in\">"+(S.log.length?'<div class="jr">'+S.log.slice().reverse().map(function(l){return "<div><time>"+l.h+"</time><span>"+esc(l.t)+"</span></div>";}).join("")+'</div>':"<div class=\"empty\">Nothing yet.</div>")+'</div></div>';
+    h+='</div></div>';
+  }else{
+    h+="<div class=\"card\"><h3>In the order of your workflow</h3><div class=\"in\"><div class=\"circ\">"
+      +"<div><b>1. Artist data</b>"+pill(S.open?"received":"pending",S.open?"ok":"")+'</div>'
+      +"<div><b>2. Company record</b>"+pill(S.structOk?"linked":"pending",S.structOk?"ok":"")+'</div>'
+      +"<div><b>3. Contracts</b>"+pill(c.p?c.ps+" signed out of "+c.p:"pending",c.p?(c.ps===c.p?"ok":"info"):"")+'</div>'
+      +"<div><b>4. Identities</b>"+pill(c.i?c.iv+" verified out of "+c.i:"pending",c.i?(c.iv===c.i?"ok":"info"):"")+'</div></div></div></div>';
+    h+="<div class=\"card\"><h3>Events <small>One per step of the thread</small></h3><div class=\"in tw\">"+(S.ev.length?"<table><thead><tr><th class=\"num\">Time</th><th>Event</th><th>Subject</th></tr></thead><tbody>"+S.ev.slice().reverse().map(function(e){return '<tr><td class="num">'+e.h+"</td><td><code>"+esc(e.code)+"</code></td><td>"+esc(e.obj)+"</td></tr>";}).join("")+'</tbody></table>':"<div class=\"empty\">No events. The thread hasn't started.</div>")+'</div></div>';
+    h+="<div class=\"card\"><h3>Files delivered</h3><div class=\"in tw\">"+((S.files.length||S.remis)?"<table><thead><tr><th>File</th><th>Format</th></tr></thead><tbody>"+S.files.map(function(f){return "<tr><td>"+esc(f)+"</td><td>Signed PDF, with its audit trail</td></tr>";}).join("")+(S.remis?"<tr><td>Master splits</td><td>File in the split tool's format</td></tr>":"")+'</tbody></table>':"<div class=\"empty\">No files delivered. A contract lands here as soon as it's signed.</div>")+'</div></div>';
+    h+="<div class=\"card\"><h3>The file as data <button type=\"button\" class=\"copy\" id=\"cp\">Copy</button></h3><div class=\"in\"><pre id=\"js\">"+esc(JSON.stringify(dossierObj(),null,2))+'</pre></div></div>';
+  }
+  var b=$("dbody"),sc=b.scrollTop;b.innerHTML=h;b.scrollTop=sc;
+  var cp=$("cp");if(cp)cp.onclick=function(){try{navigator.clipboard.writeText($("js").textContent).then(function(){cp.textContent="Copied";},function(){cp.textContent="Copy blocked";});}catch(e){cp.textContent="Copy blocked";}};
+}
+function renderApi(){
+  var el=$("apilist");if(!el)return;
+  el.innerHTML=S.msgs.length?S.msgs.map(function(m){return '<div class="pm"><div class="h"><span class="pill '+(m.dir==="out"?"":"info")+'">'+(m.dir==="out"?"Sent by LYRA":"Received from the artist")+'</span><code>'+esc(m.kind)+'</code></div><pre>'+esc(JSON.stringify(m.json,null,2))+'</pre></div>';}).join(""):"<div class=\"empty\">No messages yet.</div>";
+  el.scrollTop=el.scrollHeight;
+}
+function setTab(t){tab=t;[].forEach.call(document.querySelectorAll("#tabs button"),function(b){b.setAttribute("aria-selected",b.dataset.t===t?"true":"false");});[].forEach.call(document.querySelectorAll("#nav button"),function(b){b.setAttribute("aria-pressed",b.dataset.t===t?"true":"false");});renderDash();}
+function renderSeg(){
+  $("seg").innerHTML=ORDER.map(function(k){return '<button type="button" data-k="'+k+'" aria-pressed="'+(k===cur)+'"><span class="n">'+SC[k].n+'</span>'+SC[k].label+'</button>';}).join("");
+  var sg=$("seg"),on=sg.querySelector('[aria-pressed="true"]');
+  if(on&&sg.scrollWidth>sg.clientWidth)sg.scrollLeft+=on.getBoundingClientRect().left-sg.getBoundingClientRect().left-(sg.clientWidth-on.offsetWidth)/2;
+}
+function syncInputs(){["prenom","societe","titre","representant","compositeur","invite","prodinvite","coauteur","signataire"].forEach(function(k){var i=$("f-"+k);if(document.activeElement!==i)i.value=V[k]||"";});}
+
+/* ---------- Branchements ---------- */
+$("seg").onclick=function(e){var b=e.target.closest("button");if(b)play(b.dataset.k,S.open&&b.dataset.k!=="entree");};
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(b)setTab(b.dataset.t);};
+$("nav").onclick=function(e){var b=e.target.closest("button");if(b)setTab(b.dataset.t);};
+$("comp").onsubmit=function(e){
+  e.preventDefault();var val=field.value.trim();if(!val)return;field.value="";
+  if(pending&&pending.type==="ask")pending.submit(val);
+  else if(pending&&pending.nudge)pending.nudge(val);
+  else if(ended){userBubble(val,"text");}
+};
+$("hintbtn").onclick=function(){if(pending&&pending.type==="ask"){field.value=pending.ex;field.focus();}};
+$("b-next").onclick=function(){if(!sheet.hidden&&sheetKind==="view")closeSheet();if(!wv.hidden&&wvKind==="view")closePage();if(pending&&pending.path)pending.path();else if(ended&&!$("b-follow").hidden)$("b-follow").click();};
+$("b-reset").onclick=function(){KEPT="";S=fresh();renderApi();play(cur,false);};
+["prenom","societe","titre","representant","compositeur","invite","prodinvite","coauteur","signataire"].forEach(function(k){$("f-"+k).oninput=function(){V[k]=this.value;nomsDossier();renderDash();};});
+$("o-notes").onchange=function(){document.body.classList.toggle("notes",this.checked);};
+$("viewsw").onclick=function(e){var b=e.target.closest("button");if(!b)return;$("stage").dataset.view=b.dataset.v;[].forEach.call(this.children,function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});};
+$("rsw").onclick=function(e){var b=e.target.closest("button");if(!b)return;var api=b.dataset.r==="api";$("api").hidden=!api;$("dash").hidden=api;$("rtitle").textContent=api?"What the API sends and receives":"What the distributor sees";[].forEach.call(this.children,function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});if(api)renderApi();};
+
+window.__demo={SC:SC,ORDER:ORDER,pending:function(){return pending?pending.type:null;},read:{nums:nums,names:names,date:function(x){var r=readDate(x);return r?fmtDate(r.date,true):"";},delivery:livraison,isMe:isMe,money:money},play:play,next:function(){if(pending&&pending.path){pending.path();return true;}return false;},state:function(){return S;},ended:function(){return ended;},fast:function(x){FAST=x;},vars:V};
+var MODE="both";
+document.body.dataset.mode=MODE;
+if(MODE==="dash")FAST=true;
+if(MODE==="phone"){document.body.classList.remove("notes");$("o-notes").checked=false;}
+var tick=function(){$("clock").textContent=hh().replace(/ [AP]M$/,"");};tick();setInterval(tick,20000);
+function fit(){
+  if(MODE==="dash")return;
+  var ph=document.querySelector(".phone"),st=$("stage"),cs=getComputedStyle(st);
+  var narrow=window.matchMedia("(max-width:980px)").matches;
+  var padT=parseFloat(cs.paddingTop),padB=parseFloat(cs.paddingBottom),padX=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight);
+  var top=st.getBoundingClientRect().top+window.scrollY+padT;
+  var availH=(narrow?window.innerHeight-top-padB:st.clientHeight-padT-padB)-1;
+  var availW=(narrow||MODE==="phone")?st.clientWidth-padX:Math.max(300,st.clientWidth*0.42);
+  if(window.innerWidth<=520){var zw=Math.max(0.8,Math.min(1.15,availW/380));ph.style.zoom=zw;ph.style.height=Math.max(360,Math.floor(availH/zw))+"px";return;}
+  var z=Math.max(0.72,Math.min(1.25,Math.min(availW/380,availH/760)));
+  ph.style.zoom=z;
+  ph.style.height=(760*z>availH)?Math.max(440,Math.floor(availH/z))+"px":"";
+}
+window.addEventListener("resize",fit);
+if(window.ResizeObserver){var ro=new ResizeObserver(fit);ro.observe($("stage"));ro.observe(document.querySelector(".top"));ro.observe(document.querySelector(".bar2"));ro.observe($("names"));}
+$("b-more").onclick=function(){var t=document.querySelector(".top"),o=!t.classList.contains("more");t.classList.toggle("more",o);this.setAttribute("aria-expanded",o?"true":"false");fit();};
+$("b-names").onclick=function(){var n=$("names"),open=n.hidden;n.hidden=!open;this.setAttribute("aria-expanded",open?"true":"false");fit();if(open)$("f-prenom").focus();};
+fit();
+var auto=0;
+function stopAuto(){clearInterval(auto);auto=0;$("c-play").textContent="Play the journey";}
+$("c-next").onclick=function(){stopAuto();$("b-next").click();};
+$("c-reset").onclick=function(){stopAuto();$("b-reset").click();};
+$("c-play").onclick=function(){if(auto){stopAuto();return;}this.textContent="Pause";auto=setInterval(function(){if(ended){stopAuto();return;}if(pending&&pending.path)pending.path();},750);};
+S=fresh();renderSeg();renderApi();play(fromHash()||"entree",false);
+window.addEventListener("hashchange",function(){var k=fromHash();if(k&&k!==cur)play(k,S.open&&k!=="entree");});
+})();
+</script>
+</body>
+</html>

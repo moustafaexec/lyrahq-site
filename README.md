@@ -9,6 +9,9 @@ Site statique de LYRA, servi par GitHub Pages sur le domaine lyrahq.co.
 - `assets/site.js` et `assets/site.css` : l'animation et la mise en page de la landing.
 - `media/` : les deux films (16/9 en paysage, vertical en portrait) et leurs affiches.
 - `legal/`, `privacy/`, `data-deletion/` : pages légales en anglais. `fr/` : les mêmes en français.
+- `demo/index.html` : la démo cliquable, en anglais, en un seul fichier. Hors index (`noindex`) et hors `sitemap.xml`.
+  Elle sort du build de la démo, elle ne s'édite pas ici : on remplace le fichier entier. Un parcours s'ouvre par son
+  adresse, par exemple `lyrahq.co/demo/#split-sheet`.
 - `og.jpg` : l'image qui s'affiche quand on partage le lien.
 - `CNAME` : le domaine. Ne pas supprimer.
 
