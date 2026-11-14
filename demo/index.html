@@ -735,18 +735,18 @@ split:{label:"Split sheet",n:"1",steps:[
   {ly:function(){var c=S.contribs,p=S.parts,last=c.length-1;var ask=p[last+1]+5;var head=c.length>1?c.slice(0,-1).map(function(n,i){return n+" accepts "+p[i+1]+"%.";}).join(" ")+" ":"";return head+c[last]+" disputes it and asks for "+ask+"%.";},sim:true},
   {ly:function(){var p=S.parts.slice(),last=p.length-1;p[0]-=5;p[last]+=5;S.next=p;return S.contribs[S.contribs.length-1]+" asks for "+p[last]+". I suggest "+p.join(", ")+". The total stays at 100.";},btn:["Propose that","Decline"],path:0,off:[null,"Declining would reopen the discussion. For the demo, I'll propose this split."],do:function(){S.parts=S.next;S.oeuvreEtat="agreed";emit("split.oeuvre","Agreed: "+S.parts.join(", "));log("Song splits adjusted: "+S.parts.join(", ")+".");}},
   {ly:"Everyone accepted, and gave me their PRO and IPI number.",sim:true},
-  {ly:"Any samples or AI tools on this song?",btn:["Yes","No"],path:1,off:["I'd list them on the split sheet. For the demo, I'll keep going without any.",null]},
+  {ly:"Any samples or AI tools on this song?",btn:["Yes","No"],path:1,off:["I'd list them on the split sheet. AI-made parts also have to be disclosed when the copyright is registered. For the demo, I'll keep going without any.",null]},
   {ly:"The split sheet for {T}. For each writer: PRO, IPI, writer's share and publisher's share. No one has a publisher, so the two columns match.",doc:{name:"Split sheet",pages:2,ko:135},do:function(){piece(P4,"to sign");}},
   {when:function(){return !isOk(v("prenom"));},ly:"Before you sign, your identity. An ID, a selfie, two minutes.",cta:"Open the link",sheet:"kyc",do:function(){ident(v("prenom"),"artist","verified");log(v("prenom")+"'s identity verified, ID and selfie.");}},
   {ly:"Your signature.",btn:["Read and sign"],path:0,sign:[P4]},
   {ly:function(){var c=S.contribs;return list(c)+(c.length>1?" signed, each with a verified identity.":" signed, with a verified identity.")+(c.length>1?" It's 3:07 AM in Los Angeles, 12:07 PM in Oslo.":" It's 3:07 AM in Los Angeles.");},sim:true,do:function(){S.contribs.forEach(function(c,i){ident(c,"songwriter","verified");if(i<2)sig("04","w"+(i+2),i===0&&c===v("compositeur")?"compositeur":"coauteur",c,i===0?{kyc:true,time:"3:07 AM PT",place:"Los Angeles, CA"}:{kyc:true,time:"12:07 PM CET",place:"Oslo, Norway"});});piece(P4,"signed");S.oeuvreEtat="signed by "+(S.contribs.length+1);emit("split.oeuvre","Signed by "+(S.contribs.length+1));log("Song splits signed by "+list([v("prenom")].concat(S.contribs))+".");}},
   {ly:"The split sheet, signed by everyone.",doc:{name:"Split sheet, signed",pages:2,ko:139,id:"04",signed:true}},
-  {ly:"Next, each of you registers these same splits with your PRO and with The MLC, within 30 days. The sheet shows how ASCAP and BMI each count them.",do:function(){etape("Split signed");}}
+  {ly:"Next, the sheet asks each of you to register these same splits within 30 days: with your PRO, and with The MLC if no publisher or society does it for you. It shows how ASCAP and BMI each count them.",do:function(){etape("Split signed");}}
 ]},
 recording:{label:"Recording",n:"2",steps:[
   {ly:"Who owns the master of {T}?",btn:["My company","A label","I do"],path:0,off:[null,"That branch isn't written yet. For the demo, I'll keep going with your company.","That branch isn't written yet. For the demo, I'll keep going with your company."],do:function(){ensureOpen();}},
   {ly:"Is there a signed paper where you assign your masters to {S}?",btn:["Yes","No","Why it matters"],path:1,off:["Then I'd ask you to send it over. For the demo, I'll keep going without one.",null],
-   info:{i:2,text:"A transfer of copyright only holds in writing, signed by the owner. A distributor wants to see the paper that moves the masters from you to {S}.\n\nIt's an assignment, not a work made for hire. It doesn't waive the right the law gives you to end the transfer after 35 years."},
+   info:{i:2,text:"A transfer of copyright only holds in writing, signed by the owner. A distributor wants to see the paper that moves the masters from you to {S}.\n\nIt's an assignment, not a work made for hire. By law, no contract can waive your right to end that transfer after 35 years."},
    do:function(){piece(P2,"missing");log("Missing document: nothing in writing moves the masters from the artist to the company.");}},
   {ly:"Without it, {S} can't show Believe that it owns the master. I'll draft it: a short assignment, from you to your company."},
   {ly:"Who runs {S}?",btn:["I do, alone","I do, with others","A manager"],path:2,pick:function(i){if(i===0){V.representant=legal();syncInputs();}},off:["On your own, you sign twice: as the artist, and for {S}. One signature covers both.","With others, the assignment stays the same and I flag the file. I'll keep going.",null]},
@@ -759,7 +759,7 @@ recording:{label:"Recording",n:"2",steps:[
   {ly:"Did you first get the beat from {J} under a lease, a non-exclusive license?",btn:["Yes","No","Not sure"],path:0,off:[null,"With no earlier license, Schedule B stays empty. For the demo, I'll keep going with a lease.","I'd ask {J} in the agreement. For the demo, I'll keep going with a lease."]},
   {ly:"Send me that license. I'll read it before I draft anything."},
   {send:{name:"Beat license",pages:4,ko:212}},
-  {ly:"I read it. One clause will cost you.\n\nSection 6: the producer keeps the master of your song. You can't register it, and you can't license it to a distributor.\n\nSection 3 also caps you at 100,000 streams. Past the cap, every stream infringes.",hdr:"Red alert: you don't own your master",ftr:"Simulated reading. Clause catalog: E9, E22",btn:["Fix it","Keep the lease"],path:0,off:[null,"Keep it as is, and Believe can't take the master. For the demo, I'll fix it."],do:function(){log("Beat license read. Red alert: the producer keeps the master. Alert: a cap at 100,000 streams.");}},
+  {ly:"I read it. One clause will cost you.\n\nSection 6: the producer keeps the master of your song. You can't register it as yours, and you can't give a distributor an exclusive license.\n\nSection 3 also caps you at 100,000 streams. Past the cap, you're outside the license: that's a breach, and it can be infringement.",hdr:"Red alert: you don't own your master",ftr:"Simulated reading. Clause catalog: E9, E22",btn:["Fix it","Keep the lease"],path:0,off:[null,"Keep it as is, and Believe can't take the master. For the demo, I'll fix it."],do:function(){log("Beat license read. Red alert: the producer keeps the master. Alert: a cap at 100,000 streams.");}},
   {ly:"A fair deal says the opposite: {S} owns the finished master, and {J} gets a fee, a royalty and a credit. That's a Producer Agreement. I'm drafting it."},
   {ly:"What fee and royalty did you agree on with {J}?"},
   {ask:true,ex:"$5,000, 15%",what:"the fee, then the royalty",check:function(x){var n=nums(x);if(n.length<2)return "I need two numbers: the fee, then the royalty. For example: $5,000, 15%.";if(n[1]>50)return "A royalty of "+n[1]+"% looks off. The fee comes first, then the royalty. For example: $5,000, 15%.";return null;},do:function(x){var n=nums(x);S.fee=n[0];S.points=n[1];}},
@@ -1179,7 +1179,7 @@ function kycPage(finish){
   function head(n){return "<div class=\"steps2\"><b class=\"on\">1</b>ID<i></i><b"+(n>1?' class="on"':"")+">2</b>Selfie</div>";}
   function s1(){
     $("wvsub").textContent="Step 1 of 2 · simulation";
-    wvbody.innerHTML='<div class="kyc">'+head(1)+"<h4>Your ID</h4><p>Fit the front of your ID inside the frame.</p>"+'<div class="cam" id="cam">'+IDC+'<span class="frame"></span><span class="scanl"></span><span class="okm">'+OKS+"</span></div>"+"<div class=\"sim2\">Simulation. No picture is taken. In real life, the link opens the identity provider's flow.</div></div>";
+    wvbody.innerHTML='<div class="kyc">'+head(1)+"<h4>Your ID</h4><p>Fit the front of your ID inside the frame.</p>"+'<div class="cam" id="cam">'+IDC+'<span class="frame"></span><span class="scanl"></span><span class="okm">'+OKS+"</span></div>"+"<div class=\"sim2\">Simulation. No picture is taken. In real life, the provider's flow first says what it collects, why and for how long, and asks for your written consent.</div></div>";
     wvfoot.innerHTML="<button type=\"button\" class=\"gobtn\" id=\"k1\">Scan my ID</button>";
     $("k1").onclick=function(){this.disabled=true;this.textContent="Reading the ID…";$("cam").classList.add("run");later(function(){if(!live())return;$("cam").classList.add("done");later(s2,650);},1150);};
   }
@@ -1473,7 +1473,7 @@ function fit(){
   ph.style.height=(760*z>availH)?Math.max(440,Math.floor(availH/z))+"px":"";
 }
 window.addEventListener("resize",fit);
-if(window.ResizeObserver){var ro=new ResizeObserver(fit);ro.observe($("stage"));ro.observe(document.querySelector(".top"));ro.observe(document.querySelector(".bar2"));ro.observe($("names"));}
+if(window.ResizeObserver){var ro=new ResizeObserver(function(){requestAnimationFrame(fit);});ro.observe($("stage"));ro.observe(document.querySelector(".top"));ro.observe(document.querySelector(".bar2"));ro.observe($("names"));}
 $("b-more").onclick=function(){var t=document.querySelector(".top"),o=!t.classList.contains("more");t.classList.toggle("more",o);this.setAttribute("aria-expanded",o?"true":"false");fit();};
 $("b-names").onclick=function(){var n=$("names"),open=n.hidden;n.hidden=!open;this.setAttribute("aria-expanded",open?"true":"false");fit();if(open)$("f-prenom").focus();};
 fit();
