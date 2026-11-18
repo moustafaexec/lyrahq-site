@@ -15,6 +15,11 @@ Site statique de LYRA, servi par GitHub Pages sur le domaine lyrahq.co.
   Elle sort du build de la démo (`04-Demo-US/acces.html`), elle ne s'édite pas ici : on remplace le fichier entier.
   Une fois ouverte, `lyrahq.co/demo/` montre le split sheet. Un parcours s'ouvre par son adresse, par exemple
   `lyrahq.co/demo/#getting-started`.
+- `demo-believe/index.html` : la page d'accès de la démo Believe, sur le même modèle, avec un autre mot de passe. Le
+  premier message demande la langue : en français le parcours Believe, en anglais le parcours américain. Elle sort du
+  build de la démo Believe (`04-Demo/acces.html`) et se remplace en entier.
+- `believe/index.html` : l'ancienne adresse de la démo Believe. Elle renvoie vers `lyrahq.co/demo-believe/` en gardant
+  la fin du lien, pour qu'un lien déjà envoyé continue de marcher.
 - `og.jpg` : l'image qui s'affiche quand on partage le lien.
 - `CNAME` : le domaine. Ne pas supprimer.
 
